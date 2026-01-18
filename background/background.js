@@ -12,16 +12,78 @@ browser.scripting.compose.registerScripts([
 
 // Handle messages from compose scripts
 browser.runtime.onMessage.addListener(async (message, sender) => {
+  const tabId = sender.tab?.id;
+
   if (message.type === "getContacts") {
-    // Use sender.tab.id to get the compose tab
-    const tabId = sender.tab?.id;
     if (!tabId) {
       console.error("No tab ID available from sender");
       return [];
     }
     return await getContactsForCompose(tabId, message.query);
   }
+
+  if (message.type === "ensureRecipientInTo") {
+    if (!tabId) {
+      console.error("No tab ID available from sender");
+      return;
+    }
+    await ensureRecipientInTo(tabId, message.email, message.name);
+  }
 });
+
+/**
+ * Ensure a recipient is in the To field
+ * - If already in To, do nothing
+ * - If in CC or BCC, move to To
+ * - If not present, add to To
+ * @param {number} tabId - The compose tab ID
+ * @param {string} email - The email address
+ * @param {string} name - The display name
+ */
+async function ensureRecipientInTo(tabId, email, name) {
+  try {
+    const details = await browser.compose.getComposeDetails(tabId);
+    const emailLower = email.toLowerCase();
+
+    // Format the recipient
+    const formattedRecipient = name ? `${name} <${email}>` : email;
+
+    // Check if already in To
+    const inTo = (details.to || []).some((r) => {
+      const parsed = parseRecipient(r);
+      return parsed && parsed.email.toLowerCase() === emailLower;
+    });
+
+    if (inTo) {
+      // Already in To, nothing to do
+      return;
+    }
+
+    // Remove from CC if present
+    const newCc = (details.cc || []).filter((r) => {
+      const parsed = parseRecipient(r);
+      return !parsed || parsed.email.toLowerCase() !== emailLower;
+    });
+
+    // Remove from BCC if present
+    const newBcc = (details.bcc || []).filter((r) => {
+      const parsed = parseRecipient(r);
+      return !parsed || parsed.email.toLowerCase() !== emailLower;
+    });
+
+    // Add to To
+    const newTo = [...(details.to || []), formattedRecipient];
+
+    // Update compose details
+    await browser.compose.setComposeDetails(tabId, {
+      to: newTo,
+      cc: newCc,
+      bcc: newBcc
+    });
+  } catch (e) {
+    console.error("Error ensuring recipient in To:", e);
+  }
+}
 
 /**
  * Get contacts for autocomplete, merging recipients and address book

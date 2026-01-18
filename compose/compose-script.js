@@ -371,7 +371,7 @@
   /**
    * Select a contact and insert mention
    */
-  function selectContact(index) {
+  async function selectContact(index) {
     const contact = currentContacts[index];
     if (!contact || !atTriggerRange) return;
 
@@ -410,6 +410,17 @@
     selection.addRange(newRange);
 
     hideDropdown();
+
+    // Add contact to To field if not already there
+    try {
+      await browser.runtime.sendMessage({
+        type: "ensureRecipientInTo",
+        email: email,
+        name: displayName
+      });
+    } catch (e) {
+      console.error("Error adding recipient to To:", e);
+    }
   }
 
   /**
