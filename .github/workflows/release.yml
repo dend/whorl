@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Verify manifest version matches tag
+        run: |
+          MANIFEST_VERSION=$(grep -o '"version":\s*"[^"]*"' manifest.json | cut -d'"' -f4)
+          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: manifest.json version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $TAG_VERSION"
+
+      - name: Build XPI package
+        run: |
+          XPI_NAME="thunderbird-at-mention-${{ steps.version.outputs.VERSION }}.xpi"
+          zip -r "dist/$XPI_NAME" \
+            manifest.json \
+            background/ \
+            compose/ \
+            icons/ \
+            -x "*.DS_Store" \
+            -x "*/.git/*" \
+            -x "*/.*"
+          echo "XPI_NAME=$XPI_NAME" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## Thunderbird @Mention v${{ steps.version.outputs.VERSION }}
+
+            ### Installation
+            1. Download the `.xpi` file below
+            2. In Thunderbird, go to `Tools` → `Add-ons and Themes`
+            3. Click the gear icon → `Install Add-on From File`
+            4. Select the downloaded `.xpi` file
+
+            ### Requirements
+            - Thunderbird 128 or later
+          files: dist/${{ env.XPI_NAME }}
+          draft: false
+          prerelease: false

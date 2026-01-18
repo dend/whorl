@@ -80,6 +80,25 @@ This extension requires the following permissions:
 - `addressBooks`: Access to search contacts in address books
 - `scripting`: Ability to inject scripts into compose windows
 
+## Releasing
+
+Releases are automated via GitHub Actions. Use the release script to create a new release:
+
+```bash
+# Linux/macOS
+./scripts/release.sh 1.0.0
+
+# Windows
+.\scripts\release.ps1 1.0.0
+```
+
+The script will:
+1. Validate the version format
+2. Update `manifest.json` with the new version
+3. Commit the change
+4. Create and push the tag
+5. Trigger GitHub Actions to build and publish the release
+
 ## License
 
 MIT License

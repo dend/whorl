@@ -69,6 +69,84 @@ This document outlines the technical design and architecture of the Thunderbird 
 5. **Contacts returned** → Dropdown populated and displayed
 6. **User selects contact** → Mention inserted, recipient added to To
 
+### Interaction Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ComposeScript as compose-script.js
+    participant BackgroundScript as background.js
+    participant ThunderbirdAPI as Thunderbird APIs
+
+    Note over BackgroundScript: Extension loads
+    BackgroundScript->>ThunderbirdAPI: scripting.compose.registerScripts()
+    ThunderbirdAPI-->>BackgroundScript: Scripts registered
+
+    Note over User: User opens compose window
+    ThunderbirdAPI->>ComposeScript: Inject script & CSS
+
+    Note over User: User types "@den"
+    User->>ComposeScript: input event
+    ComposeScript->>ComposeScript: findAtTrigger()
+    Note right of ComposeScript: Detects "@den"
+
+    ComposeScript->>BackgroundScript: sendMessage({type: "getContacts", query: "den"})
+
+    BackgroundScript->>ThunderbirdAPI: compose.getComposeDetails(tabId)
+    ThunderbirdAPI-->>BackgroundScript: {to: [...], cc: [...], bcc: [...]}
+
+    BackgroundScript->>ThunderbirdAPI: addressBooks.contacts.query({searchString: "den"})
+    ThunderbirdAPI-->>BackgroundScript: [ContactNode, ...]
+
+    BackgroundScript->>BackgroundScript: parseVCard(), merge, dedupe, sort
+    BackgroundScript-->>ComposeScript: [{name, email, isRecipient}, ...]
+
+    ComposeScript->>ComposeScript: showDropdown(contacts)
+    ComposeScript->>User: Display dropdown
+
+    Note over User: User selects contact
+    User->>ComposeScript: click/Enter on contact
+    ComposeScript->>ComposeScript: selectContact()
+    Note right of ComposeScript: Insert mention span
+    ComposeScript->>User: Mention visible in editor
+
+    ComposeScript->>BackgroundScript: sendMessage({type: "ensureRecipientInTo", email, name})
+
+    BackgroundScript->>ThunderbirdAPI: compose.getComposeDetails(tabId)
+    ThunderbirdAPI-->>BackgroundScript: Current recipients
+
+    BackgroundScript->>BackgroundScript: Check To/CC/BCC
+
+    BackgroundScript->>ThunderbirdAPI: compose.setComposeDetails(tabId, {to, cc, bcc})
+    ThunderbirdAPI-->>BackgroundScript: Recipients updated
+
+    Note over User: Contact now in To field
+```
+
+### Backspace Handling Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ComposeScript as compose-script.js
+
+    Note over User: Cursor after "@John Smith "
+    User->>ComposeScript: keydown (Backspace)
+    ComposeScript->>ComposeScript: handleMentionBackspace()
+    Note right of ComposeScript: Detect adjacent mention
+    Note right of ComposeScript: words = ["John", "Smith"]
+    Note right of ComposeScript: words.pop() → ["John"]
+    ComposeScript->>ComposeScript: Update span innerHTML
+    ComposeScript->>User: Shows "@John"
+
+    User->>ComposeScript: keydown (Backspace)
+    ComposeScript->>ComposeScript: handleMentionBackspace()
+    Note right of ComposeScript: words = ["John"]
+    Note right of ComposeScript: Single word → remove span
+    ComposeScript->>ComposeScript: mentionSpan.remove()
+    ComposeScript->>User: Mention removed
+```
+
 ---
 
 ## File-by-File Breakdown
@@ -823,19 +901,8 @@ For a complete list of supported APIs, see the [Thunderbird WebExtension API doc
 1. **HTML Mode Only**: Plain text compose mode is not supported (no DOM to inject into)
 2. **Newly Opened Windows**: Registered scripts only apply to new compose windows
 3. **Large Contact Lists**: Results are limited to 10 for performance
-4. **Recipient Timing**: Recipients must be fully "pillified" to appear in suggestions
+4. **Recipient Timing**: Recipients must be fully "pillified" to appear in suggestions. In Thunderbird's compose window, when you type an email address in the To/CC/BCC fields, it initially appears as plain text. Once you press Tab, Enter, or comma, Thunderbird validates the address and converts it into a visual "pill" (a rounded rectangular badge showing the contact name). Only after this conversion does the recipient become available via `browser.compose.getComposeDetails()`. If a user is still typing an address, it won't appear in suggestions.
 5. **Draft Persistence**: Mention formatting may not survive draft save/restore
-
----
-
-## Future Enhancements
-
-- Support for mailing lists
-- Configurable result limit
-- Custom mention styling options
-- Plain text mode support
-- Mention persistence across draft saves
-- Keyboard shortcut to trigger mention
 
 ---
 
