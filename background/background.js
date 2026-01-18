@@ -56,25 +56,27 @@ async function getContactsForCompose(tabId, query) {
 
   // Search address book contacts
   try {
-    const addressBookContacts = await browser.addressBooks.contacts.query({
-      searchString: query
-    });
+    // Query address books - use searchString if provided, otherwise get all
+    const queryOptions = query ? { searchString: query } : {};
+    const addressBookContacts = await browser.addressBooks.contacts.query(queryOptions);
+
+    console.log("Address book query returned:", addressBookContacts.length, "contacts");
+    if (addressBookContacts.length > 0) {
+      console.log("Sample contact:", JSON.stringify(addressBookContacts[0], null, 2));
+    }
 
     for (const contact of addressBookContacts) {
-      const emails = contact.properties.PrimaryEmail
-        ? [contact.properties.PrimaryEmail]
-        : [];
+      // Parse vCard to extract email and name
+      const parsed = parseVCard(contact.vCard);
 
-      // Also check SecondEmail if available
-      if (contact.properties.SecondEmail) {
-        emails.push(contact.properties.SecondEmail);
+      if (!parsed.emails.length) {
+        continue;
       }
 
-      for (const email of emails) {
+      for (const email of parsed.emails) {
         const emailLower = email.toLowerCase();
         if (!contacts.has(emailLower)) {
-          const name = buildContactName(contact.properties);
-          const contactObj = { name, email };
+          const contactObj = { name: parsed.name, email };
 
           if (matchesQuery(contactObj, query)) {
             contacts.set(emailLower, {
@@ -129,18 +131,36 @@ function parseRecipient(recipient) {
 }
 
 /**
- * Build display name from contact properties
+ * Parse vCard string to extract name and emails
+ * @param {string} vCard - The vCard string
+ * @returns {{name: string, emails: string[]}}
  */
-function buildContactName(properties) {
-  const parts = [];
-  if (properties.FirstName) parts.push(properties.FirstName);
-  if (properties.LastName) parts.push(properties.LastName);
+function parseVCard(vCard) {
+  const result = { name: "", emails: [] };
 
-  if (parts.length > 0) {
-    return parts.join(" ");
+  if (!vCard) return result;
+
+  const lines = vCard.split(/\r?\n/);
+
+  for (const line of lines) {
+    // Parse FN (Formatted Name)
+    if (line.startsWith("FN:")) {
+      result.name = line.substring(3).trim();
+    }
+
+    // Parse EMAIL (may have parameters like PREF=1)
+    if (line.startsWith("EMAIL")) {
+      const colonIndex = line.indexOf(":");
+      if (colonIndex !== -1) {
+        const email = line.substring(colonIndex + 1).trim();
+        if (email) {
+          result.emails.push(email);
+        }
+      }
+    }
   }
 
-  return properties.DisplayName || "";
+  return result;
 }
 
 /**

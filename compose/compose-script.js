@@ -387,7 +387,7 @@
 
     const link = document.createElement("a");
     link.href = `mailto:${email}`;
-    link.innerHTML = `<strong>@${displayName}</strong>`;
+    link.innerHTML = `@${displayName}`;
 
     mentionSpan.appendChild(link);
 
@@ -471,7 +471,7 @@
       mentionSpan.dataset.name = newName;
       const link = mentionSpan.querySelector("a");
       if (link) {
-        link.innerHTML = `<strong>@${newName}</strong>`;
+        link.innerHTML = `@${newName}`;
       }
     } else {
       // Remove entire mention
