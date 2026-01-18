@@ -68,3 +68,32 @@
   text-decoration: underline;
 }
 
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  .at-mention-dropdown {
+    background: #2d2d2d;
+    border-color: #4a4a4a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .at-mention-item {
+    border-bottom-color: #3d3d3d;
+  }
+
+  .at-mention-item:hover,
+  .at-mention-item.selected {
+    background-color: #3d4f6f;
+  }
+
+  .at-mention-item-name {
+    color: #e8e8e8;
+  }
+
+  .at-mention-item-email {
+    color: #a0a0a0;
+  }
+
+  .at-mention a {
+    color: #8ab4f8;
+  }
+}
