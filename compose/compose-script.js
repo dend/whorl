@@ -34,7 +34,18 @@
     dropdown.id = "at-mention-dropdown";
     dropdown.className = "at-mention-dropdown";
     dropdown.style.display = "none";
+    // Mark as non-editable so it doesn't interfere with content editing
+    dropdown.contentEditable = "false";
     document.body.appendChild(dropdown);
+  }
+
+  /**
+   * Ensure dropdown exists in DOM (may have been deleted by Cmd+A, etc.)
+   */
+  function ensureDropdownExists() {
+    if (!dropdown || !document.body.contains(dropdown)) {
+      createDropdown();
+    }
   }
 
   /**
@@ -67,16 +78,12 @@
     let node = range.startContainer;
     let offset = range.startOffset;
 
-    // Must be in a text node
+    // If not in a text node, search backwards for the nearest text node
     if (node.nodeType !== Node.TEXT_NODE) {
-      // Try to find text node child
-      if (node.childNodes.length > 0 && offset > 0) {
-        node = node.childNodes[offset - 1];
-        if (node.nodeType === Node.TEXT_NODE) {
-          offset = node.textContent.length;
-        } else {
-          return null;
-        }
+      const textNode = findPreviousTextNode(node, offset);
+      if (textNode) {
+        node = textNode;
+        offset = textNode.textContent.length;
       } else {
         return null;
       }
@@ -92,13 +99,10 @@
         if (i === 0 || /\s/.test(text[i - 1])) {
           atIndex = i;
           break;
+        } else {
+          // Found @ but not valid trigger position (e.g., email@domain)
+          break;
         }
-      }
-      // Stop searching if we hit whitespace (query can't span whitespace for trigger)
-      // Actually, allow spaces in names like "@Den Deli"
-      // Just stop at another @ or certain punctuation
-      if (text[i] === "@") {
-        break; // Found @ but not valid trigger position
       }
     }
 
@@ -115,6 +119,49 @@
     triggerRange.setEnd(node, offset);
 
     return { query, range: triggerRange };
+  }
+
+  /**
+   * Search backwards from cursor position to find the nearest text node
+   * @param {Node} parentNode - The parent element node
+   * @param {number} offset - Cursor offset within parent
+   * @returns {Text|null} The text node or null
+   */
+  function findPreviousTextNode(parentNode, offset) {
+    // Search backwards through children from cursor position
+    for (let i = offset - 1; i >= 0; i--) {
+      const child = parentNode.childNodes[i];
+      if (child.nodeType === Node.TEXT_NODE) {
+        return child;
+      }
+      // If it's an element, check its last text node descendant
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const textNode = getLastTextNode(child);
+        if (textNode) {
+          return textNode;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get the last text node descendant of an element
+   * @param {Node} node
+   * @returns {Text|null}
+   */
+  function getLastTextNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node;
+    }
+    // Traverse children in reverse
+    for (let i = node.childNodes.length - 1; i >= 0; i--) {
+      const result = getLastTextNode(node.childNodes[i]);
+      if (result) {
+        return result;
+      }
+    }
+    return null;
   }
 
   /**
@@ -144,6 +191,9 @@
       hideDropdown();
       return;
     }
+
+    // Ensure dropdown exists (may have been deleted by Cmd+A, etc.)
+    ensureDropdownExists();
 
     // Build dropdown content
     dropdown.innerHTML = "";
@@ -194,24 +244,48 @@
     if (!atTriggerRange) return;
 
     const rect = atTriggerRange.getBoundingClientRect();
-    const bodyRect = document.body.getBoundingClientRect();
 
-    // Position below the @ character
-    let top = rect.bottom + window.scrollY + 2;
-    let left = rect.left + window.scrollX;
+    // With position:fixed, we use viewport coordinates directly (no scroll offset)
+    let top = rect.bottom + 2;
+    let left = rect.left;
+
+    // If rect has no dimensions, try to get cursor position from selection
+    if (rect.width === 0 && rect.height === 0) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const cursorRect = selection.getRangeAt(0).getBoundingClientRect();
+        if (cursorRect.width > 0 || cursorRect.height > 0) {
+          top = cursorRect.bottom + 2;
+          left = cursorRect.left;
+        } else {
+          // Fallback: position near top-left of viewport
+          top = 50;
+          left = 20;
+        }
+      }
+    }
 
     // Ensure dropdown doesn't go off-screen
-    const dropdownRect = dropdown.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    if (left + 250 > viewportWidth) {
-      left = viewportWidth - 260;
+    // Ensure left is not negative
+    if (left < 10) {
+      left = 10;
     }
 
-    if (top + 200 > viewportHeight + window.scrollY) {
+    if (left + 250 > viewportWidth) {
+      left = Math.max(10, viewportWidth - 260);
+    }
+
+    if (top + 200 > viewportHeight) {
       // Show above instead
-      top = rect.top + window.scrollY - 200;
+      top = Math.max(10, rect.top - 210);
+    }
+
+    // Ensure top is not negative
+    if (top < 10) {
+      top = 10;
     }
 
     dropdown.style.top = `${top}px`;

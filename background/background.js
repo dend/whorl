@@ -56,7 +56,9 @@ async function getContactsForCompose(tabId, query) {
 
   // Search address book contacts
   try {
-    const addressBookContacts = await browser.contacts.quickSearch(query);
+    const addressBookContacts = await browser.addressBooks.contacts.query({
+      searchString: query
+    });
 
     for (const contact of addressBookContacts) {
       const emails = contact.properties.PrimaryEmail
