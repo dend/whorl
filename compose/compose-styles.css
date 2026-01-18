@@ -1,0 +1,73 @@
+/**
+ * Thunderbird @Mention - Compose Styles
+ */
+
+/* Autocomplete Dropdown */
+.at-mention-dropdown {
+  position: absolute;
+  z-index: 10000;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  min-width: 200px;
+  max-width: 350px;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+/* Dropdown Items */
+.at-mention-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.at-mention-item:last-child {
+  border-bottom: none;
+}
+
+.at-mention-item:hover,
+.at-mention-item.selected {
+  background-color: #e8f0fe;
+}
+
+.at-mention-item-name {
+  font-weight: 500;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.at-mention-item-email {
+  font-size: 11px;
+  color: #666666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mention Span in Email Body */
+.at-mention {
+  display: inline;
+  white-space: nowrap;
+}
+
+.at-mention a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.at-mention a:hover {
+  text-decoration: underline;
+}
+
+.at-mention a strong {
+  font-weight: 700;
+}
