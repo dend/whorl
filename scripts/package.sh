@@ -21,16 +21,15 @@ mkdir -p "$DIST_DIR"
 # Remove old XPI if exists
 rm -f "$DIST_DIR/$XPI_NAME"
 
-# Create XPI (zip) from project root
+# Create XPI (zip) from project root - flat structure
 cd "$PROJECT_ROOT"
-zip -r "$DIST_DIR/$XPI_NAME" \
+zip "$DIST_DIR/$XPI_NAME" \
     manifest.json \
-    background/ \
-    compose/ \
-    icons/ \
-    -x "*.DS_Store" \
-    -x "*/.git/*" \
-    -x "*/.*"
+    background.js \
+    compose-script.js \
+    compose-styles.css \
+    icon-48.png \
+    icon-96.png
 
 echo ""
 echo "Created: $DIST_DIR/$XPI_NAME"

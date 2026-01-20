@@ -33,11 +33,13 @@ if (Test-Path $TempDir) {
 }
 New-Item -ItemType Directory -Path $TempDir | Out-Null
 
-# Copy extension files
+# Copy extension files (flat structure)
 Copy-Item "$ProjectRoot\manifest.json" $TempDir
-Copy-Item -Recurse "$ProjectRoot\background" $TempDir
-Copy-Item -Recurse "$ProjectRoot\compose" $TempDir
-Copy-Item -Recurse "$ProjectRoot\icons" $TempDir
+Copy-Item "$ProjectRoot\background.js" $TempDir
+Copy-Item "$ProjectRoot\compose-script.js" $TempDir
+Copy-Item "$ProjectRoot\compose-styles.css" $TempDir
+Copy-Item "$ProjectRoot\icon-48.png" $TempDir
+Copy-Item "$ProjectRoot\icon-96.png" $TempDir
 
 # Create XPI (zip archive)
 $ZipPath = "$XpiPath.zip"

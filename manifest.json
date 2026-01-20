@@ -11,11 +11,10 @@
   },
   "permissions": ["compose", "addressBooks", "scripting"],
   "background": {
-    "scripts": ["background/background.js"],
-    "type": "module"
+    "scripts": ["background.js"]
   },
   "icons": {
-    "48": "icons/icon-48.png",
-    "96": "icons/icon-96.png"
+    "48": "icon-48.png",
+    "96": "icon-96.png"
   }
 }

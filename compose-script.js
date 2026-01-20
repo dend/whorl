@@ -17,12 +17,9 @@
    * Initialize the mention system
    */
   function init() {
-    // Listen for input events on the document body (the editable area)
     document.addEventListener("input", handleInput);
     document.addEventListener("keydown", handleKeyDown, true);
     document.addEventListener("click", handleDocumentClick);
-
-    // Create dropdown element
     createDropdown();
   }
 
@@ -34,7 +31,6 @@
     dropdown.id = "at-mention-dropdown";
     dropdown.className = "at-mention-dropdown";
     dropdown.style.display = "none";
-    // Mark as non-editable so it doesn't interfere with content editing
     dropdown.contentEditable = "false";
     document.body.appendChild(dropdown);
   }
@@ -65,7 +61,6 @@
 
   /**
    * Find @ trigger before cursor and extract query
-   * @returns {Object|null} { query, range } or null if no trigger
    */
   function findAtTrigger() {
     const selection = window.getSelection();
@@ -74,11 +69,9 @@
     const range = selection.getRangeAt(0);
     if (!range.collapsed) return null;
 
-    // Get the text node and offset
     let node = range.startContainer;
     let offset = range.startOffset;
 
-    // If not in a text node, search backwards for the nearest text node
     if (node.nodeType !== Node.TEXT_NODE) {
       const textNode = findPreviousTextNode(node, offset);
       if (textNode) {
@@ -91,16 +84,13 @@
 
     const text = node.textContent.substring(0, offset);
 
-    // Find the last @ that's either at start or preceded by whitespace
     let atIndex = -1;
     for (let i = text.length - 1; i >= 0; i--) {
       if (text[i] === "@") {
-        // Check if @ is at start or preceded by whitespace
         if (i === 0 || /\s/.test(text[i - 1])) {
           atIndex = i;
           break;
         } else {
-          // Found @ but not valid trigger position (e.g., email@domain)
           break;
         }
       }
@@ -110,10 +100,8 @@
 
     const query = text.substring(atIndex + 1);
 
-    // Don't trigger if query is too long (probably not a mention)
     if (query.length > 50) return null;
 
-    // Create a range from @ to cursor
     const triggerRange = document.createRange();
     triggerRange.setStart(node, atIndex);
     triggerRange.setEnd(node, offset);
@@ -123,18 +111,13 @@
 
   /**
    * Search backwards from cursor position to find the nearest text node
-   * @param {Node} parentNode - The parent element node
-   * @param {number} offset - Cursor offset within parent
-   * @returns {Text|null} The text node or null
    */
   function findPreviousTextNode(parentNode, offset) {
-    // Search backwards through children from cursor position
     for (let i = offset - 1; i >= 0; i--) {
       const child = parentNode.childNodes[i];
       if (child.nodeType === Node.TEXT_NODE) {
         return child;
       }
-      // If it's an element, check its last text node descendant
       if (child.nodeType === Node.ELEMENT_NODE) {
         const textNode = getLastTextNode(child);
         if (textNode) {
@@ -147,14 +130,11 @@
 
   /**
    * Get the last text node descendant of an element
-   * @param {Node} node
-   * @returns {Text|null}
    */
   function getLastTextNode(node) {
     if (node.nodeType === Node.TEXT_NODE) {
       return node;
     }
-    // Traverse children in reverse
     for (let i = node.childNodes.length - 1; i >= 0; i--) {
       const result = getLastTextNode(node.childNodes[i]);
       if (result) {
@@ -169,7 +149,6 @@
    */
   async function fetchAndShowContacts(query) {
     try {
-      // Request contacts from background script (it will use sender.tab.id)
       const contacts = await browser.runtime.sendMessage({
         type: "getContacts",
         query: query
@@ -192,10 +171,8 @@
       return;
     }
 
-    // Ensure dropdown exists (may have been deleted by Cmd+A, etc.)
     ensureDropdownExists();
 
-    // Build dropdown content
     dropdown.innerHTML = "";
     contacts.forEach((contact, index) => {
       const item = document.createElement("div");
@@ -230,7 +207,6 @@
       dropdown.appendChild(item);
     });
 
-    // Position dropdown near cursor
     positionDropdown();
     dropdown.style.display = "block";
     selectedIndex = 0;
@@ -245,11 +221,9 @@
 
     const rect = atTriggerRange.getBoundingClientRect();
 
-    // With position:fixed, we use viewport coordinates directly (no scroll offset)
     let top = rect.bottom + 2;
     let left = rect.left;
 
-    // If rect has no dimensions, try to get cursor position from selection
     if (rect.width === 0 && rect.height === 0) {
       const selection = window.getSelection();
       if (selection.rangeCount > 0) {
@@ -258,18 +232,15 @@
           top = cursorRect.bottom + 2;
           left = cursorRect.left;
         } else {
-          // Fallback: position near top-left of viewport
           top = 50;
           left = 20;
         }
       }
     }
 
-    // Ensure dropdown doesn't go off-screen
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Ensure left is not negative
     if (left < 10) {
       left = 10;
     }
@@ -279,11 +250,9 @@
     }
 
     if (top + 200 > viewportHeight) {
-      // Show above instead
       top = Math.max(10, rect.top - 210);
     }
 
-    // Ensure top is not negative
     if (top < 10) {
       top = 10;
     }
@@ -317,7 +286,6 @@
    * Handle keyboard navigation and selection
    */
   function handleKeyDown(event) {
-    // Handle backspace on mentions
     if (event.key === "Backspace") {
       if (handleMentionBackspace()) {
         event.preventDefault();
@@ -325,7 +293,6 @@
       }
     }
 
-    // Only handle other keys if dropdown is visible
     if (dropdown.style.display === "none") return;
 
     switch (event.key) {
@@ -378,7 +345,6 @@
     const displayName = contact.name || contact.email;
     const email = contact.email;
 
-    // Create mention span
     const mentionSpan = document.createElement("span");
     mentionSpan.className = "at-mention";
     mentionSpan.contentEditable = "false";
@@ -391,17 +357,12 @@
 
     mentionSpan.appendChild(link);
 
-    // Delete the @query text
     atTriggerRange.deleteContents();
-
-    // Insert the mention span
     atTriggerRange.insertNode(mentionSpan);
 
-    // Add a space after and move cursor there
     const space = document.createTextNode("\u00A0");
     mentionSpan.parentNode.insertBefore(space, mentionSpan.nextSibling);
 
-    // Move cursor after the space
     const selection = window.getSelection();
     const newRange = document.createRange();
     newRange.setStartAfter(space);
@@ -411,7 +372,6 @@
 
     hideDropdown();
 
-    // Add contact to To field if not already there
     try {
       await browser.runtime.sendMessage({
         type: "ensureRecipientInTo",
@@ -425,7 +385,6 @@
 
   /**
    * Handle backspace on mentions - remove last word first
-   * @returns {boolean} True if backspace was handled
    */
   function handleMentionBackspace() {
     const selection = window.getSelection();
@@ -434,31 +393,25 @@
     const range = selection.getRangeAt(0);
     if (!range.collapsed) return false;
 
-    // Check if cursor is right after a mention span
     let node = range.startContainer;
     let offset = range.startOffset;
 
-    // Find the previous sibling or check if we're at start of a text node after mention
     let mentionSpan = null;
 
     if (node.nodeType === Node.TEXT_NODE) {
       if (offset === 0) {
-        // At start of text node, check previous sibling
         let prev = node.previousSibling;
         if (prev && prev.classList && prev.classList.contains("at-mention")) {
           mentionSpan = prev;
         }
       } else if (offset === 1 && node.textContent[0] === "\u00A0") {
-        // Right after the nbsp we insert, check for mention before
         let prev = node.previousSibling;
         if (prev && prev.classList && prev.classList.contains("at-mention")) {
           mentionSpan = prev;
-          // Also remove the nbsp
           node.textContent = node.textContent.substring(1);
         }
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
-      // Check if child at offset-1 is a mention
       if (offset > 0) {
         const child = node.childNodes[offset - 1];
         if (child && child.classList && child.classList.contains("at-mention")) {
@@ -469,23 +422,19 @@
 
     if (!mentionSpan) return false;
 
-    // Get current name words
     const name = mentionSpan.dataset.name;
     const words = name.split(/\s+/);
 
     if (words.length > 1) {
-      // Remove last word
       words.pop();
       const newName = words.join(" ");
 
-      // Update the mention
       mentionSpan.dataset.name = newName;
       const link = mentionSpan.querySelector("a");
       if (link) {
         link.innerHTML = `@${newName}`;
       }
     } else {
-      // Remove entire mention
       mentionSpan.remove();
     }
 
