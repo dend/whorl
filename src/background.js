@@ -235,22 +235,26 @@ function isBlocked(contact) {
 
 /**
  * Parse a recipient string into name and email
+ * If no name is provided, uses the email as the name
  */
 function parseRecipient(recipient) {
   if (!recipient) return null;
 
   if (typeof recipient === "object") {
+    const email = recipient.email || "";
     return {
-      name: recipient.name || "",
-      email: recipient.email || ""
+      name: recipient.name || email,
+      email: email
     };
   }
 
   const match = recipient.match(/^(?:"?([^"<]*)"?\s*)?<?([^>]+@[^>]+)>?$/);
   if (match) {
+    const email = match[2].trim();
+    const name = (match[1] || "").trim();
     return {
-      name: (match[1] || "").trim(),
-      email: match[2].trim()
+      name: name || email,
+      email: email
     };
   }
 
