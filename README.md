@@ -5,7 +5,7 @@
 	<br>
 	<br>
 	<h1>Whorl</h1>
-	<b>A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support.</b>
+	<b>A Thunderbird extension that enables @-mentioning contacts.</b>
 	<br>
 	<br>
 </div>
