@@ -4,10 +4,8 @@
 	<img src="icon-96.png" alt="Whorl" height="96">
 	<br>
 	<br>
+	<h1>Whorl</h1>
 	<b>A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support.</b>
-	<br>
-	<br>
-	<sub>If you're curious, the name references the spiral shape of the @ symbol, reminiscent of whorls found in nautilus shells.</sub>
 	<br>
 	<br>
 </div>
