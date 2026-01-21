@@ -205,8 +205,12 @@ async function getContactsForCompose(tabId, query) {
 
   const results = Array.from(contacts.values());
 
-  // Sort alphabetically by name/email
+  // Sort: recipients first, then alphabetically within each group
   results.sort((a, b) => {
+    // Recipients (To/CC/BCC) come first
+    if (a.isRecipient && !b.isRecipient) return -1;
+    if (!a.isRecipient && b.isRecipient) return 1;
+    // Then sort alphabetically by name/email
     return (a.name || a.email).localeCompare(b.name || b.email);
   });
 

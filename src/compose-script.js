@@ -379,14 +379,17 @@
     const space = document.createTextNode("\u00A0");
     mentionSpan.parentNode.insertBefore(space, mentionSpan.nextSibling);
 
-    const selection = window.getSelection();
-    const newRange = document.createRange();
-    newRange.setStartAfter(space);
-    newRange.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-
     hideDropdown();
+
+    // Defer cursor positioning to next frame to let DOM settle
+    requestAnimationFrame(() => {
+      const selection = window.getSelection();
+      const newRange = document.createRange();
+      newRange.setStart(space, 1);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    });
 
     try {
       await browser.runtime.sendMessage({
