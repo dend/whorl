@@ -1,4 +1,4 @@
-name: Release
+name: Release Whorl
 
 on:
   push:
@@ -33,32 +33,34 @@ jobs:
 
       - name: Build XPI package
         run: |
-          XPI_NAME="thunderbird-at-mention-${{ steps.version.outputs.VERSION }}.xpi"
-          zip -r "dist/$XPI_NAME" \
+          mkdir -p dist
+          XPI_NAME="whorl-${{ steps.version.outputs.VERSION }}.xpi"
+          zip "dist/$XPI_NAME" \
             manifest.json \
-            background/ \
-            compose/ \
-            icons/ \
-            -x "*.DS_Store" \
-            -x "*/.git/*" \
-            -x "*/.*"
+            background.js \
+            compose-script.js \
+            compose-styles.css \
+            options.html \
+            options.css \
+            options.js \
+            icon-48.png \
+            icon-96.png
           echo "XPI_NAME=$XPI_NAME" >> $GITHUB_ENV
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: v${{ steps.version.outputs.VERSION }}
-          body: |
-            ## Thunderbird @Mention v${{ steps.version.outputs.VERSION }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.VERSION }}" \
+            --title "Whorl v${{ steps.version.outputs.VERSION }}" \
+            --notes "## Whorl v${{ steps.version.outputs.VERSION }}
 
-            ### Installation
-            1. Download the `.xpi` file below
-            2. In Thunderbird, go to `Tools` → `Add-ons and Themes`
-            3. Click the gear icon → `Install Add-on From File`
-            4. Select the downloaded `.xpi` file
+          ### Installation
+          1. Download the \`.xpi\` file below
+          2. In Thunderbird, go to \`Tools\` → \`Add-ons and Themes\`
+          3. Click the gear icon → \`Install Add-on From File\`
+          4. Select the downloaded \`.xpi\` file
 
-            ### Requirements
-            - Thunderbird 128 or later
-          files: dist/${{ env.XPI_NAME }}
-          draft: false
-          prerelease: false
+          ### Requirements
+          - Thunderbird 128 or later" \
+            "dist/${{ env.XPI_NAME }}"

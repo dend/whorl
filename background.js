@@ -1,7 +1,48 @@
+// Default settings
+const DEFAULT_SETTINGS = {
+  customContacts: [],
+  blocklist: [],
+  maxResults: 10,
+  autoAddRecipient: true,
+  searchAddressBooks: true,
+  searchRecipients: true,
+  searchCustomContacts: true,
+  triggerCharacter: "@"
+};
+
+// Cached settings
+let settings = { ...DEFAULT_SETTINGS };
+
+// Load settings on startup
+loadSettings();
+
+// Listen for settings changes
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local") {
+    for (const key of Object.keys(changes)) {
+      if (key in settings) {
+        settings[key] = changes[key].newValue;
+      }
+    }
+  }
+});
+
+/**
+ * Load settings from storage
+ */
+async function loadSettings() {
+  try {
+    const result = await browser.storage.local.get(DEFAULT_SETTINGS);
+    settings = { ...DEFAULT_SETTINGS, ...result };
+  } catch (e) {
+    console.error("Error loading settings:", e);
+  }
+}
+
 // Register compose scripts when extension loads
 browser.scripting.compose.registerScripts([
   {
-    id: "at-mention-compose",
+    id: "whorl-compose",
     js: ["compose-script.js"],
     css: ["compose-styles.css"]
   }
@@ -11,7 +52,7 @@ browser.scripting.compose.registerScripts([
   console.error("Compose script registration failed:", err);
 });
 
-// Handle messages from compose scripts
+// Handle messages from compose scripts and options page
 browser.runtime.onMessage.addListener((message, sender) => {
   const tabId = sender.tab?.id;
 
@@ -28,7 +69,17 @@ browser.runtime.onMessage.addListener((message, sender) => {
       console.error("No tab ID available from sender");
       return Promise.resolve();
     }
+    // Check if auto-add is enabled
+    if (!settings.autoAddRecipient) {
+      return Promise.resolve();
+    }
     return ensureRecipientInTo(tabId, message.email, message.name);
+  }
+
+  if (message.type === "getSettings") {
+    return Promise.resolve({
+      triggerCharacter: settings.triggerCharacter
+    });
   }
 
   return false; // Not handling this message
@@ -79,68 +130,103 @@ async function ensureRecipientInTo(tabId, email, name) {
 }
 
 /**
- * Get contacts for autocomplete, merging recipients and address book
+ * Get contacts for autocomplete, merging recipients, address book, and custom contacts
  */
 async function getContactsForCompose(tabId, query) {
   const contacts = new Map();
 
-  try {
-    const composeDetails = await browser.compose.getComposeDetails(tabId);
-    const recipientFields = ["to", "cc", "bcc"];
+  // Add current recipients if enabled
+  if (settings.searchRecipients) {
+    try {
+      const composeDetails = await browser.compose.getComposeDetails(tabId);
+      const recipientFields = ["to", "cc", "bcc"];
 
-    for (const field of recipientFields) {
-      const recipients = composeDetails[field] || [];
-      for (const recipient of recipients) {
-        const parsed = parseRecipient(recipient);
-        if (parsed && matchesQuery(parsed, query)) {
-          contacts.set(parsed.email.toLowerCase(), {
-            ...parsed,
-            isRecipient: true
-          });
-        }
-      }
-    }
-  } catch (e) {
-    console.error("Error fetching compose details:", e);
-  }
-
-  try {
-    const queryOptions = query ? { searchString: query } : {};
-    const addressBookContacts = await browser.addressBooks.contacts.query(queryOptions);
-
-    for (const contact of addressBookContacts) {
-      const parsed = parseVCard(contact.vCard);
-
-      if (!parsed.emails.length) {
-        continue;
-      }
-
-      for (const email of parsed.emails) {
-        const emailLower = email.toLowerCase();
-        if (!contacts.has(emailLower)) {
-          const contactObj = { name: parsed.name, email };
-
-          if (matchesQuery(contactObj, query)) {
-            contacts.set(emailLower, {
-              ...contactObj,
-              isRecipient: false
+      for (const field of recipientFields) {
+        const recipients = composeDetails[field] || [];
+        for (const recipient of recipients) {
+          const parsed = parseRecipient(recipient);
+          if (parsed && matchesQuery(parsed, query) && !isBlocked(parsed)) {
+            contacts.set(parsed.email.toLowerCase(), {
+              ...parsed,
+              isRecipient: true
             });
           }
         }
       }
+    } catch (e) {
+      console.error("Error fetching compose details:", e);
     }
-  } catch (e) {
-    console.error("Error searching address book:", e);
+  }
+
+  // Add address book contacts if enabled
+  if (settings.searchAddressBooks) {
+    try {
+      const queryOptions = query ? { searchString: query } : {};
+      const addressBookContacts = await browser.addressBooks.contacts.query(queryOptions);
+
+      for (const contact of addressBookContacts) {
+        const parsed = parseVCard(contact.vCard);
+
+        if (!parsed.emails.length) {
+          continue;
+        }
+
+        for (const email of parsed.emails) {
+          const emailLower = email.toLowerCase();
+          if (!contacts.has(emailLower)) {
+            const contactObj = { name: parsed.name, email };
+
+            if (matchesQuery(contactObj, query) && !isBlocked(contactObj)) {
+              contacts.set(emailLower, {
+                ...contactObj,
+                isRecipient: false
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error searching address book:", e);
+    }
+  }
+
+  // Add custom contacts if enabled
+  if (settings.searchCustomContacts) {
+    for (const customContact of settings.customContacts) {
+      const emailLower = customContact.email.toLowerCase();
+      if (!contacts.has(emailLower) && matchesQuery(customContact, query) && !isBlocked(customContact)) {
+        contacts.set(emailLower, {
+          ...customContact,
+          isRecipient: false
+        });
+      }
+    }
   }
 
   const results = Array.from(contacts.values());
+
+  // Sort alphabetically by name/email
   results.sort((a, b) => {
-    if (a.isRecipient && !b.isRecipient) return -1;
-    if (!a.isRecipient && b.isRecipient) return 1;
     return (a.name || a.email).localeCompare(b.name || b.email);
   });
 
-  return results.slice(0, 10);
+  return results.slice(0, settings.maxResults);
+}
+
+/**
+ * Check if a contact is blocked
+ */
+function isBlocked(contact) {
+  const name = (contact.name || "").toLowerCase();
+  const email = (contact.email || "").toLowerCase();
+
+  for (const entry of settings.blocklist) {
+    const lowerEntry = entry.toLowerCase();
+    if (name.includes(lowerEntry) || email.includes(lowerEntry)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**

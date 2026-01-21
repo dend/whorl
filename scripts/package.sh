@@ -12,7 +12,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Read version from manifest.json
 VERSION=$(grep -o '"version":\s*"[^"]*"' "$PROJECT_ROOT/manifest.json" | cut -d'"' -f4)
-XPI_NAME="thunderbird-at-mention-${VERSION}.xpi"
+XPI_NAME="whorl-${VERSION}.xpi"
 
 # Create dist directory
 DIST_DIR="$PROJECT_ROOT/dist"
@@ -28,6 +28,9 @@ zip "$DIST_DIR/$XPI_NAME" \
     background.js \
     compose-script.js \
     compose-styles.css \
+    options.html \
+    options.css \
+    options.js \
     icon-48.png \
     icon-96.png
 

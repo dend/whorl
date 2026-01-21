@@ -12,15 +12,31 @@
   let currentContacts = [];
   let currentQuery = "";
   let atTriggerRange = null;
+  let triggerCharacter = "@";
 
   /**
    * Initialize the mention system
    */
-  function init() {
+  async function init() {
+    await loadSettings();
     document.addEventListener("input", handleInput);
     document.addEventListener("keydown", handleKeyDown, true);
     document.addEventListener("click", handleDocumentClick);
     createDropdown();
+  }
+
+  /**
+   * Load settings from background script
+   */
+  async function loadSettings() {
+    try {
+      const settings = await browser.runtime.sendMessage({ type: "getSettings" });
+      if (settings && settings.triggerCharacter) {
+        triggerCharacter = settings.triggerCharacter;
+      }
+    } catch (e) {
+      console.error("Error loading settings:", e);
+    }
   }
 
   /**
@@ -60,7 +76,7 @@
   }
 
   /**
-   * Find @ trigger before cursor and extract query
+   * Find trigger character before cursor and extract query
    */
   function findAtTrigger() {
     const selection = window.getSelection();
@@ -86,7 +102,7 @@
 
     let atIndex = -1;
     for (let i = text.length - 1; i >= 0; i--) {
-      if (text[i] === "@") {
+      if (text[i] === triggerCharacter) {
         if (i === 0 || /\s/.test(text[i - 1])) {
           atIndex = i;
           break;
@@ -353,7 +369,7 @@
 
     const link = document.createElement("a");
     link.href = `mailto:${email}`;
-    link.innerHTML = `@${displayName}`;
+    link.innerHTML = `${triggerCharacter}${displayName}`;
 
     mentionSpan.appendChild(link);
 
@@ -432,7 +448,7 @@
       mentionSpan.dataset.name = newName;
       const link = mentionSpan.querySelector("a");
       if (link) {
-        link.innerHTML = `@${newName}`;
+        link.innerHTML = `${triggerCharacter}${newName}`;
       }
     } else {
       mentionSpan.remove();

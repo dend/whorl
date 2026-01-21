@@ -1,14 +1,17 @@
-# Thunderbird @Mention
+# Whorl
 
-A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support.
+A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support. The name references the spiral shape of the @ symbol, reminiscent of whorls found in nautilus shells.
 
 ## Features
 
 - **@-mention autocomplete**: Type `@` in the compose window to trigger a dropdown with matching contacts
-- **Multiple contact sources**: Searches both current recipients (To/CC/BCC) and your address book
+- **Multiple contact sources**: Searches address books, current recipients, and custom contacts
+- **Custom contacts**: Add your own contacts that appear alongside address book results
+- **Blocklist**: Exclude specific contacts from appearing in suggestions
+- **Configurable trigger**: Change the trigger character from `@` to any character
 - **Auto-add to recipients**: Mentioned contacts are automatically added to the To field
 - **Smart recipient handling**: If a contact is in CC/BCC, they're moved to To when mentioned
-- **Theme-aware**: Dropdown automatically adapts to light and dark themes
+- **Theme-aware**: Dropdown and settings automatically adapt to light and dark themes
 - **Keyboard navigation**: Use arrow keys to navigate, Enter/Tab to select, Escape to close
 
 ## Requirements
@@ -17,6 +20,13 @@ A Thunderbird extension that enables @-mentioning contacts in the email compose 
 - HTML compose mode (plain text mode not supported)
 
 ## Installation
+
+### From XPI Package
+
+1. Download the latest `.xpi` file from [Releases](https://github.com/dend/whorl/releases)
+2. In Thunderbird, go to `Tools` → `Add-ons and Themes`
+3. Click the gear icon → `Install Add-on From File`
+4. Select the downloaded `.xpi` file
 
 ### From Source (Development)
 
@@ -27,16 +37,6 @@ A Thunderbird extension that enables @-mentioning contacts in the email compose 
 5. Click `Load Temporary Add-on`
 6. Select the `manifest.json` file from this repository
 
-### From XPI Package
-
-1. Run the packaging script:
-   - **Linux/macOS**: `./scripts/package.sh`
-   - **Windows**: `.\scripts\package.ps1`
-2. The XPI file will be created in the `dist/` folder
-3. In Thunderbird, go to `Tools` → `Add-ons and Themes`
-4. Click the gear icon → `Install Add-on From File`
-5. Select the `.xpi` file from the `dist/` folder
-
 ## Usage
 
 1. Open a new compose window or reply to an email
@@ -45,6 +45,19 @@ A Thunderbird extension that enables @-mentioning contacts in the email compose 
 4. Use arrow keys or mouse to select a contact
 5. Press Enter/Tab or click to insert the mention
 6. The contact will be added to the To field if not already a recipient
+
+## Settings
+
+Access settings by right-clicking the extension in Add-ons Manager and selecting "Options", or via `Tools` → `Add-ons and Themes` → Whorl → Options.
+
+### Available Settings
+
+- **Trigger character**: The character that activates the dropdown (default: `@`)
+- **Maximum results**: Number of contacts shown in dropdown (default: 10)
+- **Auto-add to recipients**: Automatically add mentioned contacts to the To field
+- **Contact sources**: Toggle searching address books, current recipients, and custom contacts
+- **Custom contacts**: Add name/email pairs that appear in suggestions
+- **Blocklist**: Patterns to exclude from suggestions (matches name or email)
 
 ## Backspace Behavior
 
@@ -55,21 +68,23 @@ When your cursor is immediately after a mention:
 ## File Structure
 
 ```
-thunderbird-at-mention/
-├── manifest.json              # Extension manifest (Manifest V3)
-├── background/
-│   └── background.js          # Contact API & recipient management
-├── compose/
-│   ├── compose-script.js      # Autocomplete & mention logic
-│   └── compose-styles.css     # Dropdown & mention styling
-├── icons/
-│   ├── icon-48.png
-│   └── icon-96.png
+whorl/
+├── manifest.json          # Extension manifest (Manifest V3)
+├── background.js          # Contact API & recipient management
+├── compose-script.js      # Autocomplete & mention logic
+├── compose-styles.css     # Dropdown & mention styling
+├── options.html           # Settings page
+├── options.js             # Settings page logic
+├── options.css            # Settings page styling
+├── icon-48.png            # Extension icon (48x48)
+├── icon-96.png            # Extension icon (96x96)
 ├── scripts/
-│   ├── package.sh             # Linux/macOS packaging script
-│   └── package.ps1            # Windows packaging script
-└── docs/
-    └── design.md              # Technical design documentation
+│   ├── package.sh         # Linux/macOS packaging script
+│   ├── package.ps1        # Windows packaging script
+│   ├── release.sh         # Linux/macOS release script
+│   └── release.ps1        # Windows release script
+├── README.md              # This file
+└── CLAUDE.md              # Development guidelines
 ```
 
 ## Permissions
@@ -79,6 +94,21 @@ This extension requires the following permissions:
 - `compose`: Access to compose window details and recipient management
 - `addressBooks`: Access to search contacts in address books
 - `scripting`: Ability to inject scripts into compose windows
+- `storage`: Persist extension settings
+
+## Building
+
+Package the extension as an XPI file:
+
+```bash
+# Linux/macOS
+./scripts/package.sh
+
+# Windows
+.\scripts\package.ps1
+```
+
+The XPI file will be created in the `dist/` folder.
 
 ## Releasing
 
@@ -106,3 +136,5 @@ MIT License
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
+
+Created by [Den Delimarsky](https://den.dev)

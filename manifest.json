@@ -1,17 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "Thunderbird @Mention",
+  "name": "Whorl",
   "version": "1.0.0",
-  "description": "Add @-mention autocomplete for contacts in email composition",
+  "description": "@mention contacts in your emails with autocomplete",
   "browser_specific_settings": {
     "gecko": {
       "id": "at-mention@thunderbird-extension",
       "strict_min_version": "128.0"
     }
   },
-  "permissions": ["compose", "addressBooks", "scripting"],
+  "permissions": ["compose", "addressBooks", "scripting", "storage"],
   "background": {
     "scripts": ["background.js"]
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   },
   "icons": {
     "48": "icon-48.png",

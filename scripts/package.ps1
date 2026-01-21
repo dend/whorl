@@ -12,7 +12,7 @@ $ProjectRoot = Split-Path -Parent $ScriptDir
 # Read version from manifest.json
 $Manifest = Get-Content "$ProjectRoot\manifest.json" | ConvertFrom-Json
 $Version = $Manifest.version
-$XpiName = "thunderbird-at-mention-$Version.xpi"
+$XpiName = "whorl-$Version.xpi"
 
 # Create dist directory
 $DistDir = Join-Path $ProjectRoot "dist"
@@ -38,6 +38,9 @@ Copy-Item "$ProjectRoot\manifest.json" $TempDir
 Copy-Item "$ProjectRoot\background.js" $TempDir
 Copy-Item "$ProjectRoot\compose-script.js" $TempDir
 Copy-Item "$ProjectRoot\compose-styles.css" $TempDir
+Copy-Item "$ProjectRoot\options.html" $TempDir
+Copy-Item "$ProjectRoot\options.css" $TempDir
+Copy-Item "$ProjectRoot\options.js" $TempDir
 Copy-Item "$ProjectRoot\icon-48.png" $TempDir
 Copy-Item "$ProjectRoot\icon-96.png" $TempDir
 
