@@ -5,6 +5,13 @@ All notable changes to Whorl will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.4 (January 20, 2026)
+
+### Fixed
+
+- Autocomplete now sorts recipients by field order: To first, then CC, then BCC, then other contacts
+- Recipients within each field preserve their original order
+
 ## 1.0.3 (January 20, 2026)
 
 ### Fixed

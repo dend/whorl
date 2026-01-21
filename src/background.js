@@ -136,20 +136,27 @@ async function getContactsForCompose(tabId, query) {
   const contacts = new Map();
 
   // Add current recipients if enabled
+  // Track field priority: to=0, cc=1, bcc=2, other=3
   if (settings.searchRecipients) {
     try {
       const composeDetails = await browser.compose.getComposeDetails(tabId);
       const recipientFields = ["to", "cc", "bcc"];
 
-      for (const field of recipientFields) {
+      for (let fieldIndex = 0; fieldIndex < recipientFields.length; fieldIndex++) {
+        const field = recipientFields[fieldIndex];
         const recipients = composeDetails[field] || [];
-        for (const recipient of recipients) {
-          const parsed = parseRecipient(recipient);
+        for (let i = 0; i < recipients.length; i++) {
+          const parsed = parseRecipient(recipients[i]);
           if (parsed && matchesQuery(parsed, query) && !isBlocked(parsed)) {
-            contacts.set(parsed.email.toLowerCase(), {
-              ...parsed,
-              isRecipient: true
-            });
+            const emailLower = parsed.email.toLowerCase();
+            // Only add if not already present (preserves first occurrence priority)
+            if (!contacts.has(emailLower)) {
+              contacts.set(emailLower, {
+                ...parsed,
+                recipientField: fieldIndex,
+                recipientIndex: i
+              });
+            }
           }
         }
       }
@@ -179,7 +186,8 @@ async function getContactsForCompose(tabId, query) {
             if (matchesQuery(contactObj, query) && !isBlocked(contactObj)) {
               contacts.set(emailLower, {
                 ...contactObj,
-                isRecipient: false
+                recipientField: 3,
+                recipientIndex: 0
               });
             }
           }
@@ -197,7 +205,8 @@ async function getContactsForCompose(tabId, query) {
       if (!contacts.has(emailLower) && matchesQuery(customContact, query) && !isBlocked(customContact)) {
         contacts.set(emailLower, {
           ...customContact,
-          isRecipient: false
+          recipientField: 3,
+          recipientIndex: 0
         });
       }
     }
@@ -205,12 +214,17 @@ async function getContactsForCompose(tabId, query) {
 
   const results = Array.from(contacts.values());
 
-  // Sort: recipients first, then alphabetically within each group
+  // Sort: To first, then CC, then BCC, then others
+  // Within each group, preserve original order for recipients, alphabetical for others
   results.sort((a, b) => {
-    // Recipients (To/CC/BCC) come first
-    if (a.isRecipient && !b.isRecipient) return -1;
-    if (!a.isRecipient && b.isRecipient) return 1;
-    // Then sort alphabetically by name/email
+    // First sort by field (to=0, cc=1, bcc=2, other=3)
+    if (a.recipientField !== b.recipientField) {
+      return a.recipientField - b.recipientField;
+    }
+    // Within same field: recipients keep their order, others sort alphabetically
+    if (a.recipientField < 3) {
+      return a.recipientIndex - b.recipientIndex;
+    }
     return (a.name || a.email).localeCompare(b.name || b.email);
   });
 
