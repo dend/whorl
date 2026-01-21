@@ -6,13 +6,15 @@ Whorl is a Thunderbird extension that adds @-mention autocomplete for contacts i
 
 ## Key Files
 
+All source files are in the `src/` directory:
+
 | File | Purpose |
 |------|---------|
-| `manifest.json` | Extension manifest (Manifest V3, min TB 128) |
-| `background.js` | Settings management, contact fetching, recipient handling |
-| `compose-script.js` | Autocomplete UI, mention insertion, keyboard handling |
-| `compose-styles.css` | Dropdown and mention styling |
-| `options.html/js/css` | Settings page UI and logic |
+| `src/manifest.json` | Extension manifest (Manifest V3, min TB 128) |
+| `src/background.js` | Settings management, contact fetching, recipient handling |
+| `src/compose-script.js` | Autocomplete UI, mention insertion, keyboard handling |
+| `src/compose-styles.css` | Dropdown and mention styling |
+| `src/options.html/js/css` | Settings page UI and logic |
 
 ## Settings Schema
 
@@ -33,11 +35,11 @@ Settings are stored via `browser.storage.local`:
 
 ## Packaging
 
-The extension is packaged as an XPI file. Run:
+The extension is packaged as an XPI file from the `src/` directory. Run:
 - Windows: `.\scripts\package.ps1`
 - Linux/Mac: `./scripts/package.sh`
 
-When adding new files to the extension, update both package scripts to include them.
+The XPI is created in `dist/`. When adding new files to the extension, add them to `src/` and update both package scripts to include them.
 
 ## Thunderbird API Notes
 

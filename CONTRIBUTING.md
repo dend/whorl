@@ -17,13 +17,13 @@ If you're new to Thunderbird extension development, these resources will help yo
 
 ### Project Architecture
 
-Whorl consists of three main parts:
+All source code lives in the `src/` directory. Whorl consists of three main parts:
 
-1. **Background Script** (`background.js`) - Runs persistently and handles contact lookups, settings management, and recipient manipulation via the Thunderbird APIs.
+1. **Background Script** (`src/background.js`) - Runs persistently and handles contact lookups, settings management, and recipient manipulation via the Thunderbird APIs.
 
-2. **Compose Script** (`compose-script.js`) - Injected into email compose windows. Handles the autocomplete UI, keyboard events, and mention insertion.
+2. **Compose Script** (`src/compose-script.js`) - Injected into email compose windows. Handles the autocomplete UI, keyboard events, and mention insertion.
 
-3. **Options Page** (`options.html`, `options.js`, `options.css`) - The settings interface where users configure the extension.
+3. **Options Page** (`src/options.html`, `src/options.js`, `src/options.css`) - The settings interface where users configure the extension.
 
 Understanding how these pieces communicate is important. The compose script sends messages to the background script to fetch contacts and trigger recipient updates. Settings are stored via `browser.storage.local` and synchronized across all components.
 
@@ -74,7 +74,7 @@ This method is quick but requires reloading after each Thunderbird restart:
 2. Go to `Tools` → `Add-ons and Themes`
 3. Click the gear icon → `Debug Add-ons`
 4. Click `Load Temporary Add-on`
-5. Navigate to your project folder and select `manifest.json`
+5. Navigate to the `src/` folder and select `manifest.json`
 
 **Option 2: Install from XPI**
 
@@ -89,7 +89,7 @@ This persists across restarts but requires rebuilding the XPI after changes:
 
 When making changes:
 
-1. Edit the source files
+1. Edit the source files in `src/`
 2. For **background.js** or **options** changes: Click "Reload" in the Debug Add-ons page
 3. For **compose script** changes: Open a new compose window (existing windows won't update)
 4. Check the browser console for errors (`Tools` → `Developer Tools` → `Error Console`)

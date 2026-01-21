@@ -39,22 +39,22 @@ try {
 
     # Update version in manifest.json
     Write-Host "Updating manifest.json to version $Version..."
-    $manifest = Get-Content "manifest.json" -Raw
+    $manifest = Get-Content "src\manifest.json" -Raw
     $manifest = $manifest -replace '"version":\s*"[^"]*"', "`"version`": `"$Version`""
-    Set-Content "manifest.json" $manifest -NoNewline
+    Set-Content "src\manifest.json" $manifest -NoNewline
 
     # Verify the change
-    $manifestObj = Get-Content "manifest.json" | ConvertFrom-Json
+    $manifestObj = Get-Content "src\manifest.json" | ConvertFrom-Json
     if ($manifestObj.version -ne $Version) {
         Write-Error "Failed to update manifest.json"
-        git checkout manifest.json
+        git checkout src\manifest.json
         exit 1
     }
 
     Write-Host "Updated manifest.json to version $Version"
 
     # Commit the change
-    git add manifest.json
+    git add src\manifest.json
     git commit -m "Bump version to $Version"
 
     # Create and push tag

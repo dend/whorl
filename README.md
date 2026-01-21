@@ -1,7 +1,7 @@
 <div align="center">
 	<br>
 	<br>
-	<img src="icon-96.png" alt="Whorl" height="96">
+	<img src="src/icon-96.png" alt="Whorl" height="96">
 	<br>
 	<br>
 	<h1>Whorl</h1>
@@ -43,7 +43,7 @@
 3. Go to `Tools` → `Add-ons and Themes`
 4. Click the gear icon → `Debug Add-ons`
 5. Click `Load Temporary Add-on`
-6. Select the `manifest.json` file from this repository
+6. Select `src/manifest.json` from this repository
 
 ## Usage
 
@@ -77,22 +77,25 @@ When your cursor is immediately after a mention:
 
 ```
 whorl/
-├── manifest.json          # Extension manifest (Manifest V3)
-├── background.js          # Contact API & recipient management
-├── compose-script.js      # Autocomplete & mention logic
-├── compose-styles.css     # Dropdown & mention styling
-├── options.html           # Settings page
-├── options.js             # Settings page logic
-├── options.css            # Settings page styling
-├── icon-48.png            # Extension icon (48x48)
-├── icon-96.png            # Extension icon (96x96)
+├── src/                       # Extension source code
+│   ├── manifest.json          # Extension manifest (Manifest V3)
+│   ├── background.js          # Contact API & recipient management
+│   ├── compose-script.js      # Autocomplete & mention logic
+│   ├── compose-styles.css     # Dropdown & mention styling
+│   ├── options.html           # Settings page
+│   ├── options.js             # Settings page logic
+│   ├── options.css            # Settings page styling
+│   ├── icon-48.png            # Extension icon (48x48)
+│   └── icon-96.png            # Extension icon (96x96)
 ├── scripts/
-│   ├── package.sh         # Linux/macOS packaging script
-│   ├── package.ps1        # Windows packaging script
-│   ├── release.sh         # Linux/macOS release script
-│   └── release.ps1        # Windows release script
-├── README.md              # This file
-└── CLAUDE.md              # Development guidelines
+│   ├── package.sh             # Linux/macOS packaging script
+│   ├── package.ps1            # Windows packaging script
+│   ├── release.sh             # Linux/macOS release script
+│   └── release.ps1            # Windows release script
+├── dist/                      # Built XPI files (generated)
+├── README.md
+├── CONTRIBUTING.md
+└── CLAUDE.md                  # Development guidelines
 ```
 
 ## Permissions
@@ -132,7 +135,7 @@ Releases are automated via GitHub Actions. Use the release script to create a ne
 
 The script will:
 1. Validate the version format
-2. Update `manifest.json` with the new version
+2. Update `src/manifest.json` with the new version
 3. Commit the change
 4. Create and push the tag
 5. Trigger GitHub Actions to build and publish the release

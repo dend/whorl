@@ -1,5 +1,5 @@
 #
-# Package Thunderbird @Mention extension as XPI
+# Package Whorl extension as XPI
 # Usage: .\scripts\package.ps1
 #
 
@@ -8,9 +8,10 @@ $ErrorActionPreference = "Stop"
 # Get script directory and project root
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
+$SrcDir = Join-Path $ProjectRoot "src"
 
 # Read version from manifest.json
-$Manifest = Get-Content "$ProjectRoot\manifest.json" | ConvertFrom-Json
+$Manifest = Get-Content "$SrcDir\manifest.json" | ConvertFrom-Json
 $Version = $Manifest.version
 $XpiName = "whorl-$Version.xpi"
 
@@ -27,22 +28,22 @@ if (Test-Path $XpiPath) {
 }
 
 # Create temporary directory for packaging
-$TempDir = Join-Path $env:TEMP "tb-at-mention-pkg"
+$TempDir = Join-Path $env:TEMP "whorl-pkg"
 if (Test-Path $TempDir) {
     Remove-Item -Recurse -Force $TempDir
 }
 New-Item -ItemType Directory -Path $TempDir | Out-Null
 
-# Copy extension files (flat structure)
-Copy-Item "$ProjectRoot\manifest.json" $TempDir
-Copy-Item "$ProjectRoot\background.js" $TempDir
-Copy-Item "$ProjectRoot\compose-script.js" $TempDir
-Copy-Item "$ProjectRoot\compose-styles.css" $TempDir
-Copy-Item "$ProjectRoot\options.html" $TempDir
-Copy-Item "$ProjectRoot\options.css" $TempDir
-Copy-Item "$ProjectRoot\options.js" $TempDir
-Copy-Item "$ProjectRoot\icon-48.png" $TempDir
-Copy-Item "$ProjectRoot\icon-96.png" $TempDir
+# Copy extension files from src/
+Copy-Item "$SrcDir\manifest.json" $TempDir
+Copy-Item "$SrcDir\background.js" $TempDir
+Copy-Item "$SrcDir\compose-script.js" $TempDir
+Copy-Item "$SrcDir\compose-styles.css" $TempDir
+Copy-Item "$SrcDir\options.html" $TempDir
+Copy-Item "$SrcDir\options.css" $TempDir
+Copy-Item "$SrcDir\options.js" $TempDir
+Copy-Item "$SrcDir\icon-48.png" $TempDir
+Copy-Item "$SrcDir\icon-96.png" $TempDir
 
 # Create XPI (zip archive)
 $ZipPath = "$XpiPath.zip"

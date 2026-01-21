@@ -41,21 +41,21 @@ fi
 
 # Update version in manifest.json
 echo "Updating manifest.json to version $VERSION..."
-sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" manifest.json
-rm -f manifest.json.bak
+sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" src/manifest.json
+rm -f src/manifest.json.bak
 
 # Verify the change
-NEW_VERSION=$(grep -o '"version":\s*"[^"]*"' manifest.json | cut -d'"' -f4)
+NEW_VERSION=$(grep -o '"version":\s*"[^"]*"' src/manifest.json | cut -d'"' -f4)
 if [ "$NEW_VERSION" != "$VERSION" ]; then
   echo "Error: Failed to update manifest.json"
-  git checkout manifest.json
+  git checkout src/manifest.json
   exit 1
 fi
 
 echo "Updated manifest.json to version $VERSION"
 
 # Commit the change
-git add manifest.json
+git add src/manifest.json
 git commit -m "Bump version to $VERSION"
 
 # Create and push tag

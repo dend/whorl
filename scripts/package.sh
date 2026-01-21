@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Package Thunderbird @Mention extension as XPI
+# Package Whorl extension as XPI
 # Usage: ./scripts/package.sh
 #
 
@@ -9,9 +9,10 @@ set -e
 # Get script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+SRC_DIR="$PROJECT_ROOT/src"
 
 # Read version from manifest.json
-VERSION=$(grep -o '"version":\s*"[^"]*"' "$PROJECT_ROOT/manifest.json" | cut -d'"' -f4)
+VERSION=$(grep -o '"version":\s*"[^"]*"' "$SRC_DIR/manifest.json" | cut -d'"' -f4)
 XPI_NAME="whorl-${VERSION}.xpi"
 
 # Create dist directory
@@ -21,8 +22,8 @@ mkdir -p "$DIST_DIR"
 # Remove old XPI if exists
 rm -f "$DIST_DIR/$XPI_NAME"
 
-# Create XPI (zip) from project root - flat structure
-cd "$PROJECT_ROOT"
+# Create XPI (zip) from src directory
+cd "$SRC_DIR"
 zip "$DIST_DIR/$XPI_NAME" \
     manifest.json \
     background.js \

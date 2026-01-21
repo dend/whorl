@@ -23,7 +23,7 @@ jobs:
 
       - name: Verify manifest version matches tag
         run: |
-          MANIFEST_VERSION=$(grep -o '"version":\s*"[^"]*"' manifest.json | cut -d'"' -f4)
+          MANIFEST_VERSION=$(grep -o '"version":\s*"[^"]*"' src/manifest.json | cut -d'"' -f4)
           TAG_VERSION="${{ steps.version.outputs.VERSION }}"
           if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
             echo "Error: manifest.json version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
@@ -35,7 +35,8 @@ jobs:
         run: |
           mkdir -p dist
           XPI_NAME="whorl-${{ steps.version.outputs.VERSION }}.xpi"
-          zip "dist/$XPI_NAME" \
+          cd src
+          zip "../dist/$XPI_NAME" \
             manifest.json \
             background.js \
             compose-script.js \
