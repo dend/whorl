@@ -248,10 +248,21 @@ function parseRecipient(recipient) {
     };
   }
 
-  const match = recipient.match(/^(?:"?([^"<]*)"?\s*)?<?([^>]+@[^>]+)>?$/);
-  if (match) {
-    const email = match[2].trim();
-    const name = (match[1] || "").trim();
+  const trimmed = recipient.trim();
+
+  // Check for bare email address (no angle brackets, no quotes)
+  if (/^[^\s<>"]+@[^\s<>"]+$/.test(trimmed)) {
+    return {
+      name: trimmed,
+      email: trimmed
+    };
+  }
+
+  // Match "Name <email>" format (with angle brackets)
+  const bracketMatch = trimmed.match(/^"?([^"<]*)"?\s*<([^>]+@[^>]+)>$/);
+  if (bracketMatch) {
+    const email = bracketMatch[2].trim();
+    const name = bracketMatch[1].trim();
     return {
       name: name || email,
       email: email
