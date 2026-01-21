@@ -1,5 +1,5 @@
 #
-# Release script for Thunderbird @Mention
+# Release script for Whorl
 # Usage: .\scripts\release.ps1 1.0.0
 #
 

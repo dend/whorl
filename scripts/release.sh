@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Release script for Thunderbird @Mention
+# Release script for Whorl
 # Usage: ./scripts/release.sh 1.0.0
 #
 

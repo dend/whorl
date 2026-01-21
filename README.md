@@ -1,6 +1,16 @@
-# Whorl
-
-A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support. The name references the spiral shape of the @ symbol, reminiscent of whorls found in nautilus shells.
+<div align="center">
+	<br>
+	<br>
+	<img src="icon-96.png" alt="Whorl" height="96">
+	<br>
+	<br>
+	<b>A Thunderbird extension that enables @-mentioning contacts in the email compose window with autocomplete support.</b>
+	<br>
+	<br>
+	<sub>If you're curious, the name references the spiral shape of the @ symbol, reminiscent of whorls found in nautilus shells.</sub>
+	<br>
+	<br>
+</div>
 
 ## Features
 
@@ -135,6 +145,8 @@ MIT License
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+Contributions are welcome! Please read the [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+---
 
 Created by [Den Delimarsky](https://den.dev)

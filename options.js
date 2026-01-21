@@ -24,7 +24,19 @@ let elements = {};
 async function init() {
   cacheElements();
   attachEventListeners();
+  displayVersion();
   await loadSettings();
+}
+
+/**
+ * Display extension version from manifest
+ */
+function displayVersion() {
+  const manifest = browser.runtime.getManifest();
+  const versionEl = document.getElementById("extensionVersion");
+  if (versionEl) {
+    versionEl.textContent = manifest.version;
+  }
 }
 
 /**
