@@ -419,7 +419,13 @@
     let mentionSpan = null;
 
     if (node.nodeType === Node.TEXT_NODE) {
-      if (offset === 0) {
+      // Check if we're in or right after a zero-width space anchor
+      const text = node.textContent;
+      const isZwsAnchor =
+        text === "\u200B" || (offset <= 1 && text.startsWith("\u200B"));
+
+      if (offset === 0 || isZwsAnchor) {
+        // Look for mention span as previous sibling
         let prev = node.previousSibling;
         if (prev && prev.classList && prev.classList.contains("at-mention")) {
           mentionSpan = prev;
@@ -428,7 +434,21 @@
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       if (offset > 0) {
         const child = node.childNodes[offset - 1];
-        if (child && child.classList && child.classList.contains("at-mention")) {
+        // Check if child is a zero-width space text node
+        if (
+          child &&
+          child.nodeType === Node.TEXT_NODE &&
+          child.textContent === "\u200B"
+        ) {
+          const prev = child.previousSibling;
+          if (prev && prev.classList && prev.classList.contains("at-mention")) {
+            mentionSpan = prev;
+          }
+        } else if (
+          child &&
+          child.classList &&
+          child.classList.contains("at-mention")
+        ) {
           mentionSpan = child;
         }
       }
@@ -440,6 +460,7 @@
     const words = name.split(/\s+/);
 
     if (words.length > 1) {
+      // Remove last word, keep mention
       words.pop();
       const newName = words.join(" ");
 
@@ -449,6 +470,15 @@
         link.innerHTML = `${triggerCharacter}${newName}`;
       }
     } else {
+      // Last word - remove the mention span and its zero-width space anchor
+      const nextSibling = mentionSpan.nextSibling;
+      if (
+        nextSibling &&
+        nextSibling.nodeType === Node.TEXT_NODE &&
+        nextSibling.textContent === "\u200B"
+      ) {
+        nextSibling.remove();
+      }
       mentionSpan.remove();
     }
 
