@@ -471,6 +471,9 @@
       }
     } else {
       // Last word - remove the mention span and its zero-width space anchor
+      const parent = mentionSpan.parentNode;
+      const prevSibling = mentionSpan.previousSibling;
+
       const nextSibling = mentionSpan.nextSibling;
       if (
         nextSibling &&
@@ -480,6 +483,24 @@
         nextSibling.remove();
       }
       mentionSpan.remove();
+
+      // Reposition cursor where the mention was
+      const selection = window.getSelection();
+      const newRange = document.createRange();
+      if (prevSibling) {
+        // Position at end of previous sibling
+        if (prevSibling.nodeType === Node.TEXT_NODE) {
+          newRange.setStart(prevSibling, prevSibling.length);
+        } else {
+          newRange.setStartAfter(prevSibling);
+        }
+      } else if (parent) {
+        // No previous sibling - position at start of parent
+        newRange.setStart(parent, 0);
+      }
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
     }
 
     return true;
