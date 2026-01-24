@@ -109,7 +109,7 @@ This extension requires the following permissions:
 
 ## Building
 
-Package the extension as an XPI file:
+Package the extension as an XPI file using the build scripts:
 
 ```bash
 # Linux/macOS
