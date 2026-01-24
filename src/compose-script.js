@@ -376,8 +376,9 @@
     atTriggerRange.deleteContents();
     atTriggerRange.insertNode(mentionSpan);
 
-    const space = document.createTextNode("\u00A0");
-    mentionSpan.parentNode.insertBefore(space, mentionSpan.nextSibling);
+    // Insert zero-width space as cursor anchor
+    const cursorAnchor = document.createTextNode("\u200B");
+    mentionSpan.parentNode.insertBefore(cursorAnchor, mentionSpan.nextSibling);
 
     hideDropdown();
 
@@ -385,7 +386,7 @@
     requestAnimationFrame(() => {
       const selection = window.getSelection();
       const newRange = document.createRange();
-      newRange.setStart(space, 1);
+      newRange.setStart(cursorAnchor, 1);
       newRange.collapse(true);
       selection.removeAllRanges();
       selection.addRange(newRange);
@@ -422,12 +423,6 @@
         let prev = node.previousSibling;
         if (prev && prev.classList && prev.classList.contains("at-mention")) {
           mentionSpan = prev;
-        }
-      } else if (offset === 1 && node.textContent[0] === "\u00A0") {
-        let prev = node.previousSibling;
-        if (prev && prev.classList && prev.classList.contains("at-mention")) {
-          mentionSpan = prev;
-          node.textContent = node.textContent.substring(1);
         }
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
