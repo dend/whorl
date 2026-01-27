@@ -369,7 +369,7 @@
 
     const link = document.createElement("a");
     link.href = `mailto:${email}`;
-    link.innerHTML = `${triggerCharacter}${displayName}`;
+    link.textContent = `${triggerCharacter}${displayName}`;
 
     mentionSpan.appendChild(link);
 
@@ -467,7 +467,7 @@
       mentionSpan.dataset.name = newName;
       const link = mentionSpan.querySelector("a");
       if (link) {
-        link.innerHTML = `${triggerCharacter}${newName}`;
+        link.textContent = `${triggerCharacter}${newName}`;
       }
     } else {
       // Last word - remove the mention span and its zero-width space anchor

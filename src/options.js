@@ -164,11 +164,15 @@ function getBlocklistFromUI() {
  * Render custom contacts list
  */
 function renderCustomContacts(contacts) {
-  elements.customContactsList.innerHTML = "";
+  elements.customContactsList.replaceChildren();
 
   if (contacts.length === 0) {
     const row = document.createElement("tr");
-    row.innerHTML = '<td colspan="3" class="empty-message">No custom contacts added</td>';
+    const td = document.createElement("td");
+    td.colSpan = 3;
+    td.className = "empty-message";
+    td.textContent = "No custom contacts added";
+    row.appendChild(td);
     elements.customContactsList.appendChild(row);
     return;
   }
@@ -177,12 +181,26 @@ function renderCustomContacts(contacts) {
     const row = document.createElement("tr");
     row.dataset.name = contact.name;
     row.dataset.email = contact.email;
-    row.innerHTML = `
-      <td>${escapeHtml(contact.name)}</td>
-      <td>${escapeHtml(contact.email)}</td>
-      <td><button type="button" class="remove-btn" data-index="${index}" title="Remove">&times;</button></td>
-    `;
-    row.querySelector(".remove-btn").addEventListener("click", () => removeCustomContact(index));
+
+    const tdName = document.createElement("td");
+    tdName.textContent = contact.name;
+
+    const tdEmail = document.createElement("td");
+    tdEmail.textContent = contact.email;
+
+    const tdAction = document.createElement("td");
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "remove-btn";
+    removeBtn.dataset.index = index;
+    removeBtn.title = "Remove";
+    removeBtn.textContent = "\u00D7";
+    removeBtn.addEventListener("click", () => removeCustomContact(index));
+    tdAction.appendChild(removeBtn);
+
+    row.appendChild(tdName);
+    row.appendChild(tdEmail);
+    row.appendChild(tdAction);
     elements.customContactsList.appendChild(row);
   });
 }
@@ -191,7 +209,7 @@ function renderCustomContacts(contacts) {
  * Render blocklist
  */
 function renderBlocklist(blocklist) {
-  elements.blocklistItems.innerHTML = "";
+  elements.blocklistItems.replaceChildren();
 
   if (blocklist.length === 0) {
     const li = document.createElement("li");
@@ -204,11 +222,21 @@ function renderBlocklist(blocklist) {
   blocklist.forEach((entry, index) => {
     const li = document.createElement("li");
     li.dataset.entry = entry;
-    li.innerHTML = `
-      <span class="blocklist-text">${escapeHtml(entry)}</span>
-      <button type="button" class="remove-btn" data-index="${index}" title="Remove">&times;</button>
-    `;
-    li.querySelector(".remove-btn").addEventListener("click", () => removeBlocklistEntry(index));
+
+    const span = document.createElement("span");
+    span.className = "blocklist-text";
+    span.textContent = entry;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "remove-btn";
+    removeBtn.dataset.index = index;
+    removeBtn.title = "Remove";
+    removeBtn.textContent = "\u00D7";
+    removeBtn.addEventListener("click", () => removeBlocklistEntry(index));
+
+    li.appendChild(span);
+    li.appendChild(removeBtn);
     elements.blocklistItems.appendChild(li);
   });
 }
@@ -308,15 +336,6 @@ function showStatus(message, isError = false) {
  */
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // Initialize when DOM is ready
