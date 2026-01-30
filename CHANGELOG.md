@@ -5,47 +5,19 @@ All notable changes to Whorl will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.0.4 (January 20, 2026)
+## 1.0.7 (January 29, 2026)
 
 ### Fixed
 
-- Autocomplete now sorts recipients by field order: To first, then CC, then BCC, then other contacts
-- Recipients within each field preserve their original order
-
-## 1.0.3 (January 20, 2026)
-
-### Fixed
-
-- Fixed parsing of bare email addresses (e.g., `den@example.com`) that was incorrectly splitting them into partial name and email
-
-## 1.0.2 (January 20, 2026)
-
-### Fixed
-
-- Recipients without a display name now correctly use the email as the display name
-
-## 1.0.1 (January 20, 2026)
-
-### Changed
-
-- Recipients (To/CC/BCC) now appear first in the autocomplete dropdown, prioritized over address book and custom contacts
-
-### Fixed
-
-- Cursor now positions correctly after inserting a mention (previously appeared at far right of window)
-
-## 1.0.0 (January 20, 2026)
+- Compose script not loading on Thunderbird launch - added proper lifecycle event handlers (`onInstalled`, `onStartup`) with retry logic
+- Custom contacts and blocklist entries not persisting - now auto-saved immediately when added/removed
 
 ### Added
 
-- @-mention autocomplete in compose window
-- Multiple contact sources: address books, current recipients, custom contacts
-- Custom contacts management in settings
-- Blocklist to exclude contacts from suggestions
-- Configurable trigger character (default: @)
-- Auto-add mentioned contacts to To field
-- Smart recipient handling (moves from CC/BCC to To when mentioned)
-- Theme-aware UI (light/dark mode support)
-- Keyboard navigation (arrow keys, Enter/Tab, Escape)
-- Maximum results setting
-- Contact source toggles
+- 16px and 32px icon sizes for better UI display in tabs and toolbars
+- Favicon links in options page for tab icon display
+
+### Changed
+
+- Script registration now uses retry logic (3 attempts, 500ms delay) to handle timing issues
+- Unregisters existing scripts before re-registering to avoid conflicts

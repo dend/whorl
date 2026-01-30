@@ -242,9 +242,9 @@ function renderBlocklist(blocklist) {
 }
 
 /**
- * Add a custom contact
+ * Add a custom contact (auto-saves)
  */
-function addCustomContact() {
+async function addCustomContact() {
   const name = elements.newContactName.value.trim();
   const email = elements.newContactEmail.value.trim();
 
@@ -269,24 +269,42 @@ function addCustomContact() {
   contacts.push({ name, email });
   renderCustomContacts(contacts);
 
+  // Auto-save to storage
+  try {
+    await browser.storage.local.set({ customContacts: contacts });
+    showStatus("Contact added");
+  } catch (e) {
+    console.error("Error saving contact:", e);
+    showStatus("Error saving contact", true);
+  }
+
   elements.newContactName.value = "";
   elements.newContactEmail.value = "";
   elements.newContactName.focus();
 }
 
 /**
- * Remove a custom contact
+ * Remove a custom contact (auto-saves)
  */
-function removeCustomContact(index) {
+async function removeCustomContact(index) {
   const contacts = getCustomContactsFromUI();
   contacts.splice(index, 1);
   renderCustomContacts(contacts);
+
+  // Auto-save to storage
+  try {
+    await browser.storage.local.set({ customContacts: contacts });
+    showStatus("Contact removed");
+  } catch (e) {
+    console.error("Error saving contacts:", e);
+    showStatus("Error removing contact", true);
+  }
 }
 
 /**
- * Add a blocklist entry
+ * Add a blocklist entry (auto-saves)
  */
-function addBlocklistEntry() {
+async function addBlocklistEntry() {
   const entry = elements.newBlocklistEntry.value.trim();
 
   if (!entry) {
@@ -304,17 +322,35 @@ function addBlocklistEntry() {
   blocklist.push(entry);
   renderBlocklist(blocklist);
 
+  // Auto-save to storage
+  try {
+    await browser.storage.local.set({ blocklist });
+    showStatus("Entry added to blocklist");
+  } catch (e) {
+    console.error("Error saving blocklist:", e);
+    showStatus("Error saving blocklist", true);
+  }
+
   elements.newBlocklistEntry.value = "";
   elements.newBlocklistEntry.focus();
 }
 
 /**
- * Remove a blocklist entry
+ * Remove a blocklist entry (auto-saves)
  */
-function removeBlocklistEntry(index) {
+async function removeBlocklistEntry(index) {
   const blocklist = getBlocklistFromUI();
   blocklist.splice(index, 1);
   renderBlocklist(blocklist);
+
+  // Auto-save to storage
+  try {
+    await browser.storage.local.set({ blocklist });
+    showStatus("Entry removed from blocklist");
+  } catch (e) {
+    console.error("Error saving blocklist:", e);
+    showStatus("Error removing entry", true);
+  }
 }
 
 /**

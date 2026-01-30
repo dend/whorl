@@ -15,6 +15,7 @@ All source files are in the `src/` directory:
 | `src/compose-script.js` | Autocomplete UI, mention insertion, keyboard handling |
 | `src/compose-styles.css` | Dropdown and mention styling |
 | `src/options.html/js/css` | Settings page UI and logic |
+| `src/icon-*.png` | Extension icons (16, 32, 48, 96px) |
 
 ## Settings Schema
 
@@ -41,16 +42,94 @@ The extension is packaged as an XPI file from the `src/` directory. Run:
 
 The XPI is created in `dist/`. When adding new files to the extension, add them to `src/` and update both package scripts to include them.
 
+## Icons
+
+The extension uses multiple icon sizes for different UI contexts:
+
+| Size | Purpose |
+|------|---------|
+| 16px | Tabs, small UI elements |
+| 32px | Toolbars, medium contexts |
+| 48px | Add-on manager |
+| 96px | High-DPI displays |
+
+All sizes must be declared in `manifest.json`:
+
+```json
+"icons": {
+  "16": "icon-16.png",
+  "32": "icon-32.png",
+  "48": "icon-48.png",
+  "96": "icon-96.png"
+}
+```
+
+**Options page favicon:** Add link elements in `options.html` `<head>` for the tab icon:
+
+```html
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+```
+
+**Generating smaller icons:** Use `scripts/resize-icons.ps1` to create 16px and 32px versions from the 96px source.
+
 ## Thunderbird API Notes
 
 ### Compose Scripts
+
 Registered via `browser.scripting.compose.registerScripts()` in background.js.
 
+**Lifecycle Requirements:** Script registration must use proper lifecycle events to work reliably:
+
+```javascript
+// Flag to prevent duplicate registration
+let scriptsRegistered = false;
+
+async function registerComposeScripts(maxAttempts = 3, delayMs = 500) {
+  if (scriptsRegistered) return;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Unregister first to avoid conflicts
+      try {
+        await browser.scripting.compose.unregisterScripts({ ids: ["script-id"] });
+      } catch (e) { /* may not exist */ }
+
+      await browser.scripting.compose.registerScripts([...]);
+      scriptsRegistered = true;
+      return;
+    } catch (err) {
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+}
+
+// Required lifecycle hooks
+browser.runtime.onInstalled.addListener(() => initialize());
+browser.runtime.onStartup.addListener(() => initialize());
+initialize(); // Fallback for development reloads
+```
+
 ### Address Books
+
 Use `browser.addressBooks.contacts.query()` to search contacts. Returns vCard data that needs parsing.
 
 ### Storage
+
 Settings persisted via `browser.storage.local`. Listen for changes with `browser.storage.onChanged`.
+
+**Auto-save Pattern:** For list items (contacts, blocklist), save immediately on add/remove rather than requiring a Save button:
+
+```javascript
+async function addItem() {
+  items.push(newItem);
+  renderItems(items);
+  await browser.storage.local.set({ items });
+  showStatus("Item added");
+}
+```
 
 ## UI Design Guidelines
 

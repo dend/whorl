@@ -42,6 +42,8 @@ Copy-Item "$SrcDir\compose-styles.css" $TempDir
 Copy-Item "$SrcDir\options.html" $TempDir
 Copy-Item "$SrcDir\options.css" $TempDir
 Copy-Item "$SrcDir\options.js" $TempDir
+Copy-Item "$SrcDir\icon-16.png" $TempDir
+Copy-Item "$SrcDir\icon-32.png" $TempDir
 Copy-Item "$SrcDir\icon-48.png" $TempDir
 Copy-Item "$SrcDir\icon-96.png" $TempDir
 

@@ -32,6 +32,8 @@ zip "$DIST_DIR/$XPI_NAME" \
     options.html \
     options.css \
     options.js \
+    icon-16.png \
+    icon-32.png \
     icon-48.png \
     icon-96.png
 

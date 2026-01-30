@@ -13,19 +13,8 @@ const DEFAULT_SETTINGS = {
 // Cached settings
 let settings = { ...DEFAULT_SETTINGS };
 
-// Load settings on startup
-loadSettings();
-
-// Listen for settings changes
-browser.storage.onChanged.addListener((changes, area) => {
-  if (area === "local") {
-    for (const key of Object.keys(changes)) {
-      if (key in settings) {
-        settings[key] = changes[key].newValue;
-      }
-    }
-  }
-});
+// Flag to prevent duplicate script registration
+let scriptsRegistered = false;
 
 /**
  * Load settings from storage
@@ -39,18 +28,77 @@ async function loadSettings() {
   }
 }
 
-// Register compose scripts when extension loads
-browser.scripting.compose.registerScripts([
-  {
-    id: "whorl-compose",
-    js: ["compose-script.js"],
-    css: ["compose-styles.css"]
+/**
+ * Register compose scripts with retry logic
+ */
+async function registerComposeScripts(maxAttempts = 3, delayMs = 500) {
+  if (scriptsRegistered) {
+    return;
   }
-]).then(() => {
-  console.log("Compose script registered successfully");
-}).catch((err) => {
-  console.error("Compose script registration failed:", err);
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // First try to unregister any existing scripts to avoid conflicts
+      try {
+        await browser.scripting.compose.unregisterScripts({ ids: ["whorl-compose"] });
+      } catch (e) {
+        // Script may not exist, ignore
+      }
+
+      await browser.scripting.compose.registerScripts([
+        {
+          id: "whorl-compose",
+          js: ["compose-script.js"],
+          css: ["compose-styles.css"]
+        }
+      ]);
+
+      scriptsRegistered = true;
+      console.log("Compose script registered successfully");
+      return;
+    } catch (err) {
+      console.warn(`Compose script registration attempt ${attempt}/${maxAttempts} failed:`, err);
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        console.error("Compose script registration failed after all attempts:", err);
+      }
+    }
+  }
+}
+
+/**
+ * Initialize the extension
+ */
+async function initialize() {
+  await loadSettings();
+  await registerComposeScripts();
+}
+
+// Listen for settings changes
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local") {
+    for (const key of Object.keys(changes)) {
+      if (key in settings) {
+        settings[key] = changes[key].newValue;
+      }
+    }
+  }
 });
+
+// Handle extension install or update
+browser.runtime.onInstalled.addListener(() => {
+  initialize();
+});
+
+// Handle Thunderbird startup (when extension is already installed)
+browser.runtime.onStartup.addListener(() => {
+  initialize();
+});
+
+// Immediate initialization as fallback (for development reloads)
+initialize();
 
 // Handle messages from compose scripts and options page
 browser.runtime.onMessage.addListener((message, sender) => {
