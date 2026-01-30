@@ -42,6 +42,15 @@ The extension is packaged as an XPI file from the `src/` directory. Run:
 
 The XPI is created in `dist/`. When adding new files to the extension, add them to `src/` and update both package scripts to include them.
 
+## Releases
+
+Releases are created by pushing a git tag. Tags use the format `X.Y.Z` (no `v` prefix):
+
+```bash
+git tag 1.0.7
+git push origin 1.0.7
+```
+
 ## Icons
 
 The extension uses multiple icon sizes for different UI contexts:
