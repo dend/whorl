@@ -59,22 +59,8 @@ jobs:
 
       - name: Build XPI package
         run: |
-          mkdir -p dist
-          XPI_NAME="whorl-${{ steps.version.outputs.VERSION }}.xpi"
-          cd src
-          zip "../dist/$XPI_NAME" \
-            manifest.json \
-            background.js \
-            compose-script.js \
-            compose-styles.css \
-            options.html \
-            options.css \
-            options.js \
-            icon-16.png \
-            icon-32.png \
-            icon-48.png \
-            icon-96.png
-          echo "XPI_NAME=$XPI_NAME" >> $GITHUB_ENV
+          ./scripts/package.sh
+          echo "XPI_NAME=whorl-${{ steps.version.outputs.VERSION }}.xpi" >> $GITHUB_ENV
 
       - name: Create Release
         env:
