@@ -13,9 +13,6 @@ const DEFAULT_SETTINGS = {
 // Cached settings
 let settings = { ...DEFAULT_SETTINGS };
 
-// Flag to prevent duplicate script registration
-let scriptsRegistered = false;
-
 /**
  * Load settings from storage
  */
@@ -29,49 +26,31 @@ async function loadSettings() {
 }
 
 /**
- * Register compose scripts with retry logic
+ * Register compose scripts
  */
-async function registerComposeScripts(maxAttempts = 3, delayMs = 500) {
-  if (scriptsRegistered) {
-    return;
-  }
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      // First try to unregister any existing scripts to avoid conflicts
-      try {
-        await browser.scripting.compose.unregisterScripts({ ids: ["whorl-compose"] });
-      } catch (e) {
-        // Script may not exist, ignore
-      }
-
-      await browser.scripting.compose.registerScripts([
-        {
-          id: "whorl-compose",
-          js: ["compose-script.js"],
-          css: ["compose-styles.css"]
-        }
-      ]);
-
-      scriptsRegistered = true;
-      console.log("Compose script registered successfully");
-      return;
-    } catch (err) {
-      console.warn(`Compose script registration attempt ${attempt}/${maxAttempts} failed:`, err);
-
-      if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      } else {
-        console.error("Compose script registration failed after all attempts:", err);
-      }
+async function registerComposeScripts() {
+  await browser.scripting.compose.registerScripts([
+    {
+      id: "whorl-compose",
+      js: ["compose-script.js"],
+      css: ["compose-styles.css"]
     }
-  }
+  ]);
+  console.log("Compose script registered successfully");
 }
 
 /**
  * Initialize the extension
+ * Uses session storage to prevent duplicate initialization when the
+ * background script is re-executed (e.g., when woken by a message)
  */
 async function initialize() {
+  const { initialized } = await browser.storage.session.get({ initialized: false });
+  if (initialized) {
+    return;
+  }
+  await browser.storage.session.set({ initialized: true });
+
   await loadSettings();
   await registerComposeScripts();
 }
@@ -87,17 +66,11 @@ browser.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-// Handle extension install or update
-browser.runtime.onInstalled.addListener(() => {
-  initialize();
-});
+// Register onStartup listener to ensure background script runs on Thunderbird startup
+browser.runtime.onStartup.addListener(() => {});
 
-// Handle Thunderbird startup (when extension is already installed)
-browser.runtime.onStartup.addListener(() => {
-  initialize();
-});
-
-// Immediate initialization as fallback (for development reloads)
+// Initialize the extension
+// This runs when: startup (via onStartup listener above), install/update, or dev reload
 initialize();
 
 // Handle messages from compose scripts and options page

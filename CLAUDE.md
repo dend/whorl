@@ -88,37 +88,26 @@ All sizes must be declared in `manifest.json`:
 
 Registered via `browser.scripting.compose.registerScripts()` in background.js.
 
-**Lifecycle Requirements:** Script registration must use proper lifecycle events to work reliably:
+**Lifecycle Requirements:** In Manifest V3, the background page is an event page that unloads after idle time (~2 minutes). Any registered event listener will wake it up and re-execute top-level code. Use session storage to prevent duplicate initialization:
 
 ```javascript
-// Flag to prevent duplicate registration
-let scriptsRegistered = false;
-
-async function registerComposeScripts(maxAttempts = 3, delayMs = 500) {
-  if (scriptsRegistered) return;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      // Unregister first to avoid conflicts
-      try {
-        await browser.scripting.compose.unregisterScripts({ ids: ["script-id"] });
-      } catch (e) { /* may not exist */ }
-
-      await browser.scripting.compose.registerScripts([...]);
-      scriptsRegistered = true;
-      return;
-    } catch (err) {
-      if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
-    }
+async function initialize() {
+  // Prevent re-initialization when background wakes from messages
+  const { initialized } = await browser.storage.session.get({ initialized: false });
+  if (initialized) {
+    return;
   }
+  await browser.storage.session.set({ initialized: true });
+
+  await loadSettings();
+  await registerComposeScripts();
 }
 
-// Required lifecycle hooks
-browser.runtime.onInstalled.addListener(() => initialize());
-browser.runtime.onStartup.addListener(() => initialize());
-initialize(); // Fallback for development reloads
+// Empty listener ensures background runs on Thunderbird startup
+browser.runtime.onStartup.addListener(() => {});
+
+// Initialize on load (startup, install/update, or dev reload)
+initialize();
 ```
 
 ### Address Books
