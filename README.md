@@ -150,4 +150,4 @@ Contributions are welcome! Please read the [Contributing Guidelines](CONTRIBUTIN
 
 ---
 
-Created by [Den Delimarsky](https://den.dev)
+Created by [Den](https://den.dev)

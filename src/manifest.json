@@ -3,7 +3,7 @@
   "name": "Whorl",
   "version": "1.0.8",
   "description": "@mention contacts in your emails with autocomplete",
-  "author": "Den Delimarsky",
+  "author": "Den",
   "browser_specific_settings": {
     "gecko": {
       "id": "at-mention@thunderbird-extension",
