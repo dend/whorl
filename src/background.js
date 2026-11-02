@@ -308,6 +308,15 @@ function parseRecipient(recipient) {
 }
 
 /**
+ * Explicitly match RFC 6350 escape sequences (\\, \,, \;, \n, and \N) so escaped characters in FN values are handled correctly.
+ */
+function unescapeVCardText(value) {
+  return value.replace(/\\([\\,;nN])/g, (_, c) =>
+    c === 'n' || c === 'N' ? '\n' : c
+  );
+}
+
+/**
  * Parse vCard string to extract name and emails
  */
 function parseVCard(vCard) {
@@ -319,7 +328,7 @@ function parseVCard(vCard) {
 
   for (const line of lines) {
     if (line.startsWith("FN:")) {
-      result.name = line.substring(3).trim();
+      result.name = unescapeVCardText(line.substring(3)).trim();
     }
 
     if (line.startsWith("EMAIL")) {
