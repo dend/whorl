@@ -5,6 +5,12 @@ All notable changes to Whorl will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- Mentions no longer produce `<mailto:...>` and an invisible zero-width space in messages sent as plain text: the mention is plain styled text, and the cursor anchor is a no-break space
+
 ## 1.0.8 (January 30, 2026)
 
 ### Fixed

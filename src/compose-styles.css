@@ -57,6 +57,7 @@
 .at-mention {
   display: inline;
   white-space: nowrap;
+  color: #1a73e8;
 }
 
 .at-mention a {
@@ -93,6 +94,7 @@
     color: #a0a0a0;
   }
 
+  .at-mention,
   .at-mention a {
     color: #8ab4f8;
   }
