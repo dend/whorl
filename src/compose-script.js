@@ -367,17 +367,15 @@
     mentionSpan.dataset.email = email;
     mentionSpan.dataset.name = displayName;
 
-    const link = document.createElement("a");
-    link.href = `mailto:${email}`;
-    link.textContent = `${triggerCharacter}${displayName}`;
-
-    mentionSpan.appendChild(link);
+    // Plain text (no <a>): a mailto link is rendered as "<mailto:...>" when the
+    // message is sent as plain text. The recipient is added to To anyway.
+    mentionSpan.textContent = `${triggerCharacter}${displayName}`;
 
     atTriggerRange.deleteContents();
     atTriggerRange.insertNode(mentionSpan);
 
     // Insert zero-width space as cursor anchor
-    const cursorAnchor = document.createTextNode("\u200B");
+    const cursorAnchor = document.createTextNode("\u00A0");
     mentionSpan.parentNode.insertBefore(cursorAnchor, mentionSpan.nextSibling);
 
     hideDropdown();
@@ -422,7 +420,7 @@
       // Check if we're in or right after a zero-width space anchor
       const text = node.textContent;
       const isZwsAnchor =
-        text === "\u200B" || (offset <= 1 && text.startsWith("\u200B"));
+        text === "\u00A0" || (offset <= 1 && text.startsWith("\u00A0"));
 
       if (offset === 0 || isZwsAnchor) {
         // Look for mention span as previous sibling
@@ -438,7 +436,7 @@
         if (
           child &&
           child.nodeType === Node.TEXT_NODE &&
-          child.textContent === "\u200B"
+          child.textContent === "\u00A0"
         ) {
           const prev = child.previousSibling;
           if (prev && prev.classList && prev.classList.contains("at-mention")) {
@@ -465,10 +463,7 @@
       const newName = words.join(" ");
 
       mentionSpan.dataset.name = newName;
-      const link = mentionSpan.querySelector("a");
-      if (link) {
-        link.textContent = `${triggerCharacter}${newName}`;
-      }
+      mentionSpan.textContent = `${triggerCharacter}${newName}`;
     } else {
       // Last word - remove the mention span and its zero-width space anchor
       const parent = mentionSpan.parentNode;
@@ -478,7 +473,7 @@
       if (
         nextSibling &&
         nextSibling.nodeType === Node.TEXT_NODE &&
-        nextSibling.textContent === "\u200B"
+        nextSibling.textContent === "\u00A0"
       ) {
         nextSibling.remove();
       }
