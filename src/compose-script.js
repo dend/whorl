@@ -48,15 +48,17 @@
     dropdown.className = "at-mention-dropdown";
     dropdown.style.display = "none";
     dropdown.contentEditable = "false";
-    document.body.appendChild(dropdown);
+    // Not attached here: it is only added to the body while visible,
+    // otherwise an empty node would be sent with every message.
   }
 
   /**
    * Ensure dropdown exists in DOM (may have been deleted by Cmd+A, etc.)
    */
   function ensureDropdownExists() {
-    if (!dropdown || !document.body.contains(dropdown)) {
-      createDropdown();
+    if (!dropdown) createDropdown();
+    if (!document.body.contains(dropdown)) {
+      document.body.appendChild(dropdown);
     }
   }
 
@@ -281,7 +283,11 @@
    * Hide the dropdown
    */
   function hideDropdown() {
+    // Detach the popup from the compose body: a hidden node would be sent
+    // with the message and picked up by other add-ons reading the body HTML.
+    dropdown.innerHTML = "";
     dropdown.style.display = "none";
+    dropdown.remove();
     selectedIndex = -1;
     currentContacts = [];
     currentQuery = "";
