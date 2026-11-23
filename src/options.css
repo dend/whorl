@@ -1,0 +1,315 @@
+/* Whorl - Settings */
+
+:root {
+  /* Light theme */
+  --bg: #F9F9FA;
+  --border: #D7D7DB;
+  --text: #15141A;
+  --text-secondary: #5B5B66;
+  --accent: #0061E0;
+  --input-bg: #FFFFFF;
+  --input-border: #8F8F9D;
+  --btn-bg: #F0F0F4;
+  --btn-border: #CFCFD8;
+  --success: #058B00;
+  --error: #C50042;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #2A2A2E;
+    --border: #4A4A4F;
+    --text: #F9F9FA;
+    --text-secondary: #B1B1B3;
+    --accent: #45A1FF;
+    --input-bg: #3A3A3E;
+    --input-border: #5C5C61;
+    --btn-bg: #4A4A4F;
+    --btn-border: #5C5C61;
+    --success: #30E60B;
+    --error: #FF848B;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font: 13px/1.4 system-ui, -apple-system, sans-serif;
+  padding: 12px 16px;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 600px;
+}
+
+h1 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.extension-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.extension-meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.extension-meta a:hover {
+  text-decoration: underline;
+}
+
+.extension-meta .separator {
+  margin: 0 6px;
+  color: var(--border);
+}
+
+.extension-meta .version {
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 12px 0 6px 0;
+}
+
+h2:first-of-type {
+  margin-top: 0;
+}
+
+.settings-section {
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.section-description {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.section-actions {
+  margin-bottom: 8px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row > label:first-child {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.checkbox-row {
+  margin-bottom: 2px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0 6px 0 0;
+  accent-color: var(--accent);
+  vertical-align: middle;
+}
+
+.checkbox-row label {
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"] {
+  font: inherit;
+  padding: 3px 6px;
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+input::placeholder {
+  color: var(--text-secondary);
+}
+
+#triggerCharacter {
+  width: 36px;
+  text-align: center;
+  font-family: monospace;
+}
+
+#maxResults {
+  width: 50px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 8px 0;
+  font-size: 12px;
+}
+
+thead th {
+  text-align: left;
+  padding: 4px 12px 4px 0;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+thead th:last-child {
+  width: 32px;
+  padding-right: 0;
+  text-align: center;
+}
+
+tbody td {
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody td:nth-child(2) {
+  font-family: monospace;
+}
+
+tbody td:last-child {
+  padding-right: 0;
+  text-align: center;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+.remove-btn:hover {
+  color: var(--error);
+}
+
+#blocklistItems {
+  list-style: none;
+  margin: 4px 0 8px 0;
+  font-size: 12px;
+}
+
+#blocklistItems li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+#blocklistItems li:last-child {
+  border-bottom: none;
+}
+
+.blocklist-text {
+  font-family: monospace;
+}
+
+.add-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.add-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+button {
+  font: inherit;
+  padding: 3px 10px;
+  border: 1px solid var(--btn-border);
+  border-radius: 2px;
+  background: var(--btn-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--text-secondary);
+}
+
+button:active {
+  background: var(--border);
+}
+
+button.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button.primary:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--btn-bg));
+}
+
+.actions {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#saveStatus {
+  font-size: 12px;
+  color: var(--success);
+}
+
+#saveStatus.error {
+  color: var(--error);
+}
+
+.empty-message {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: italic;
+  padding: 4px 0;
+}

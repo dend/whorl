@@ -1,0 +1,24 @@
+/**
+ * Thunderbird @Mention - Compose Styles
+ * The dropdown's styles are in compose-script.js, inside its shadow root.
+ */
+
+/* Mention Span in Email Body */
+.at-mention {
+  display: inline;
+  white-space: nowrap;
+  color: #1a73e8;
+}
+
+/* The mention's mailto: link takes the mention colour */
+.at-mention a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  .at-mention {
+    color: #8ab4f8;
+  }
+}

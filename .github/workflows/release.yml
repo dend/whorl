@@ -1,0 +1,83 @@
+name: Release Whorl
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Verify manifest version matches tag
+        run: |
+          MANIFEST_VERSION=$(grep -o '"version":\s*"[^"]*"' src/manifest.json | cut -d'"' -f4)
+          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: manifest.json version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "Version verified: $TAG_VERSION"
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+          if [ -z "$PREV_TAG" ]; then
+            echo "PREV_TAG=" >> $GITHUB_OUTPUT
+            echo "No previous tag found"
+          else
+            echo "PREV_TAG=$PREV_TAG" >> $GITHUB_OUTPUT
+            echo "Previous tag: $PREV_TAG"
+          fi
+
+      - name: Get commits since last release
+        id: commits
+        run: |
+          if [ -z "${{ steps.prev_tag.outputs.PREV_TAG }}" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" ${{ steps.prev_tag.outputs.PREV_TAG }}..HEAD)
+          fi
+          echo "COMMITS<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build XPI package
+        run: |
+          ./scripts/package.sh
+          echo "XPI_NAME=whorl-${{ steps.version.outputs.VERSION }}.xpi" >> $GITHUB_ENV
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.VERSION }}" \
+            --title "Whorl ${{ steps.version.outputs.VERSION }}" \
+            --notes "See the [changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for what changed.
+
+          ### Installation
+          1. Download the \`.xpi\` file below.
+          2. In Thunderbird, open Add-ons and Themes from the Tools menu.
+          3. Click the gear icon and choose Install Add-on From File.
+          4. Select the \`.xpi\` file.
+
+          Requires Thunderbird 128 or later.
+
+          ### Commits
+          ${{ steps.commits.outputs.COMMITS }}" \
+            "dist/${{ env.XPI_NAME }}"
